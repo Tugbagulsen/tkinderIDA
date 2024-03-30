@@ -3,12 +3,13 @@ from tkinter import LabelFrame, messagebox
 import cv2
 from PIL import Image, ImageTk
 import threading
+import datetime
 
 
 
 master = tk.Tk()
 
-canvas_genislik = 1000
+canvas_genislik = 1000 # burada neden degişken atamayı kullandık
 canvas_yukseklik = 450
 panel_genislik = 150
 panel_yukseklik = 250
@@ -104,6 +105,9 @@ for i, metin in enumerate(buton_metinleri):
 
 def kamera_goruntusu_goster():
     def kamera_thread():
+
+
+
         # Kamera başlatma
         kamera = cv2.VideoCapture(0)
 
@@ -138,6 +142,8 @@ def kamera_goruntusu_goster():
 
 def start_video_capture():
     def video_thread():
+
+
         # Video kaydı için kamera yakalama
         cap = cv2.VideoCapture(0)
 
@@ -145,8 +151,12 @@ def start_video_capture():
             messagebox.showerror("Hata", "Kamera bulunamadı veya açılamadı!")
             return
         # Video kaydı için VideoWriter nesnesi oluşturma
+
+
         fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        out = cv2.VideoWriter('video_kaydi.avi', fourcc, 20.0, (640, 480))
+        tarih_saat = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        dosya_adi = f'video_{tarih_saat}.avi'
+        out = cv2.VideoWriter(dosya_adi, fourcc, 20.0, (640, 480))
 
         while cap.isOpened():
             ret, frame = cap.read()
