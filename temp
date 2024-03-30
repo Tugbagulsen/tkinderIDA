@@ -1,0 +1,41 @@
+import cv2
+
+# Video codec'ini belirleme
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+
+# VideoWriter nesnesi oluşturma
+out = None
+
+# Kamera yakalama cihazını başlat
+kamera = cv2.VideoCapture(0)
+
+# Eğer kamera başarıyla açılırsa devam et
+if kamera.isOpened():
+    # Sonsuz bir döngü içerisinde
+    while True:
+        # Kameradan bir kare al
+        ret, frame = kamera.read()
+        
+        # Eğer kare alındıysa, işlemleri gerçekleştir
+        if ret:
+            # Alınan kareyi görüntüle
+            cv2.imshow('Kamera', frame)
+            
+            # Kayıt başlamadıysa, VideoWriter nesnesini oluştur
+            if out is None:
+                out = cv2.VideoWriter(f'video_kaydi.avi', fourcc, 20.0, (640, 480))
+            
+            # Kareyi video dosyasına yaz
+            out.write(frame)
+        
+        # ESC tuşuna basıldığında veya pencereye tıklanarak kapatılınca döngüyü sonlandır
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+# Kamera yakalama cihazını ve video dosyasını kapat
+kamera.release()
+if out is not None:
+    out.release()
+
+# OpenCV pencerelerini kapat
+cv2.destroyAllWindows()

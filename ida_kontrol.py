@@ -193,9 +193,3 @@ def start_video_capture():
 
 
 master.mainloop()
-
-
-
-
-
-
