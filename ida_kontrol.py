@@ -3,7 +3,7 @@ from tkinter import LabelFrame, messagebox
 import cv2
 from PIL import Image, ImageTk
 import threading
-import datetime
+from datetime import datetime 
 
 
 
@@ -67,7 +67,11 @@ def func6():
 
 
 def func7():
+    video_source = 0
     start_video_capture()
+    record_with_timestamps(video_source)
+
+    
 
 
 def func8():
@@ -103,46 +107,51 @@ for i, metin in enumerate(buton_metinleri):
     buton.grid(row=row, column=column, padx=40, pady=3)
 
 
-def kamera_goruntusu_goster():
-    def kamera_thread():
 
+def record_with_timestamps(video_source):
+    # Kamera akışını başlat
+    cap = cv2.VideoCapture(video_source)
 
+    # Video kaydetme objesi oluştur
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    # Tarih ve saat bilgisini al
+    now = datetime.now()
+    timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+    
+    # Video dosyasının adını tarih ve saat bilgisi ile oluştur
+    output_filename = f'record_{timestamp}.avi'
+    out = cv2.VideoWriter(output_filename, fourcc, 20.0, (width, height))
 
-        # Kamera başlatma
-        kamera = cv2.VideoCapture(0)
+    while True:
+        # Bir kareyi oku
+        ret, frame = cap.read()
 
-        while True:
-            # Kameradan bir kare al
-            ret, kare = kamera.read()
+        if ret:
+            # Videoya kareyi yaz
+            out.write(frame)
 
-            # Eğer kare başarılı bir şekilde alındıysa
-            if ret:
-                # OpenCV kütüphanesinden görüntüyü Tkinter ile uyumlu hale getirme
-                kare = cv2.cvtColor(kare, cv2.COLOR_BGR2RGB)
-                kare = Image.fromarray(kare)
-                kare = ImageTk.PhotoImage(kare)
-
-                # Görüntüyü bir etikete yerleştirme
-                label = tk.Label(label_frame_veri, image=kare)
-                label.image = kare
-                label.pack()
-
-                # 10 ms bekleyerek kareyi güncelleme
-                label.after(10, kamera_thread)
-            else:
-                messagebox.showerror("Hata", "Kamera görüntüsü alınamadı.")
+            # Kullanıcı 'q' tuşuna basarak çıkış yapabilir
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
+        else:
+            break
 
-        # Kamerayı kapat
-        kamera.release()
+    # Kamera akışını ve video kaydetme nesnesini serbest bırak
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
 
-    # Kamera işlemlerini arka planda gerçekleştirme
-    threading.Thread(target=kamera_thread, daemon=True).start()
+
+
 
 
 def start_video_capture():
     def video_thread():
 
+    
 
         # Video kaydı için kamera yakalama
         cap = cv2.VideoCapture(0)
@@ -153,13 +162,10 @@ def start_video_capture():
         # Video kaydı için VideoWriter nesnesi oluşturma
 
 
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        tarih_saat = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        dosya_adi = f'video_{tarih_saat}.avi'
-        out = cv2.VideoWriter(dosya_adi, fourcc, 20.0, (640, 480))
-
+        
         while cap.isOpened():
             ret, frame = cap.read()
+            
             if ret:
                 # Her kareyi uygun formata dönüştürme
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -172,17 +178,17 @@ def start_video_capture():
 
                 # 'q' tuşuna basılınca kayıttan çık
                 if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
+                   return
+
+               
+                label.after(30)
+
             else:
                 break
 
-            # 30 ms bekleyerek kareyi güncelleme
-            label.after(30)
-
         # Pencere ve kayıt nesnelerini serbest bırak
         cap.release()
-        out.release()
-
+        
     # İlk kareyi göstermek için bir etiket oluşturma
     label = tk.Label(label_frame_veri)
     label.pack()
