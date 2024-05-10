@@ -3,18 +3,18 @@ from tkinter import LabelFrame, messagebox
 import cv2
 from PIL import Image, ImageTk
 import threading
+import time
 from datetime import datetime
-
-# Tkinter ana penceresi
-master = tk.Tk()
 
 # Başlangıç penceresi boyutları
 canvas_genislik = 1000
 canvas_yukseklik = 450
-panel_genislik = 150
-panel_yukseklik = 250
 panel_margin = 10
-top_margin = 20
+top_margin = 20  # burada top_margin tanımlandı
+
+# Tkinter ana penceresi
+master = tk.Tk()
+master.title("Kamera ve Veri Okuma Uygulaması")
 
 # Kanvas oluşturma
 canvas = tk.Canvas(master, width=canvas_genislik, height=canvas_yukseklik)
@@ -26,25 +26,79 @@ def label_frame_olusturma(master, text, relx, rely, relwidth, relheight):
     label_frame.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight)
     return label_frame
 
-# Veri Paneli (Kamera görüntüsü burada olacak)
+# Veri Paneli (kamera görüntüsü burada gösterilecek)
 label_frame_veri = label_frame_olusturma(master, "Veri", 0.04, top_margin / canvas_yukseklik, 0.5, 0.65)
 
-# Arac Paneli (başka bir örnek için)
-label_frame_arac = label_frame_olusturma(master, "Arac", 0.6, 0.04, 0.34, 0.1)
-label_arac = tk.Label(label_frame_arac, text="Jetson Nano    192.168.1.1")
-label_arac.pack(padx=15, pady=5, anchor=tk.NW)
-
-# Sonuç Paneli (veriler burada gösterilecek)
-label_frame_sonuc = label_frame_olusturma(master, "Sonuç", 0.04, top_margin / 28, 0.9, 0.2)
+# Sonuç Paneli (kameradan çıkarılan veriler burada yazdırılacak)
+label_frame_sonuc = label_frame_olusturma(master, "Sonuç", 0.6, 0.2, 0.35, 0.5)
 
 # Fonksiyon Paneli
-label_frame_fonksiyon = label_frame_olusturma(master, "Fonksiyon", 0.6, 0.2, 0.35, 0.5)
+label_frame_fonksiyon = label_frame_olusturma(master, "Fonksiyon", 0.6, 0.6, 0.35, 0.3)
 
-# Fonksiyonlar
+# Kamera açma butonu
 def btnCamera():
     start_video_capture()
 
-# Diğer buton fonksiyonları
+# Video akışını başlatacak fonksiyon
+def start_video_capture():
+    label_veri = tk.Label(label_frame_veri)  # "Veri" panelinde kamera görüntüsü gösterilecek
+    label_veri.pack()
+
+    def video_thread():
+        cap = cv2.VideoCapture(0)
+
+        if not cap.isOpened():
+            messagebox.showerror("Hata", "Kamera bulunamadı veya açılamadı!")
+            return
+
+        # Video kaydı için nesne oluşturma
+        frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        video_filename = f"video_kayit_{now}.avi"
+        fourcc = cv2.VideoWriter_fourcc(*"XVID")
+        out = cv2.VideoWriter(video_filename, fourcc, 20.0, (frame_width, frame_height))
+
+        while cap.isOpened():
+            ret, frame = cap.read()
+
+            if ret:
+                # Görüntüyü "Veri" panelinde göster
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img = Image.fromarray(frame_rgb)
+                imgtk = ImageTk.PhotoImage(img)
+
+                label_veri.config(image=imgtk)
+                label_veri.image = imgtk
+
+                # Video kaydı
+                out.write(frame)
+
+                # Kameradan bazı verileri "Sonuç" paneline yazdır
+                height, width, _ = frame.shape
+                update_sonuc_panel(f"Görüntü Boyutu: {width}x{height}")
+
+            else:
+                break
+
+            time.sleep(0.05)  # Görüntü güncellemeleri arasında küçük bir bekleme süresi
+
+        # Kaynakları serbest bırak
+        cap.release()
+        out.release()  # Video kaydını tamamla
+
+    threading.Thread(target=video_thread, daemon=True).start()
+
+# Sonuç paneline veri yazdırmak için fonksiyon
+def update_sonuc_panel(text):
+    # "Sonuç" paneline veri eklemek için mevcut içeriği temizle ve yeni içerik ekle
+    for widget in label_frame_sonuc.winfo_children():
+        widget.destroy()
+
+    label = tk.Label(label_frame_sonuc, text=text)
+    label.pack()
+
+# Fonksiyonlar
 def btnBatma():
     messagebox.showinfo("Bilgi", "Batma butonuna tıklandı")
 
@@ -88,46 +142,5 @@ for i, metin in enumerate(buton_metinleri):
     buton = tk.Button(label_frame_fonksiyon, text=metin, width=10, height=1, background='White', command=buton_fonksiyonlari[i])
     buton.grid(row=row, column=column, padx=40, pady=3)
 
-# Kamera görüntüsü için fonksiyon
-def start_video_capture():
-    label_veri = tk.Label(label_frame_veri)  # "Veri" paneli için
-    label_veri.pack()
-
-    def video_thread():
-        cap = cv2.VideoCapture(0)
-
-        if not cap.isOpened():
-            messagebox.showerror("Hata", "Kamera bulunamadı veya açılamadı!")
-            return
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-
-            if ret:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                frame = Image.fromarray(frame)
-                frame = ImageTk.PhotoImage(frame)
-
-                # Görüntüyü "Veri" panelindeki etikete yerleştir
-                label_veri.config(image=frame)
-                label_veri.image = frame
-
-            else:
-                break
-
-        # Kaynakları serbest bırak
-        cap.release()
-
-    threading.Thread(target=video_thread, daemon=True).start()
-
-
-
-# sonuc paneline kameradan veri gelmeli
-def update_sonuc_panel(text):
-    label_sonuc = tk.Label(label_frame_sonuc, text=text)
-    label_sonuc.pack()
-
-
-update_sonuc_panel("test") # simdilik kalsin
-
+# Tkinter ana döngüsü
 master.mainloop()
