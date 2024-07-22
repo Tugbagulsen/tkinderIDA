@@ -1,3 +1,4 @@
+# ida3 teki boş yerleri sildim
 import cv2
 import numpy as np
 import tkinter as tk
@@ -24,7 +25,6 @@ master.title("Kamera ve Veri Okuma Uygulamasi")
 # Kanvas oluşturma
 canvas = tk.Canvas(master, width=canvas_genislik, height=canvas_yukseklik)
 canvas.pack()
-
 def label_frame_olusturma(master, text, relx, rely, relwidth, relheight):
     label_frame = LabelFrame(master, text=text)
     label_frame.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight)
@@ -81,6 +81,9 @@ def btnStabilize():
 def btnAuto():
     messagebox.showinfo("Bilgi", "Auto butonuna tıklandı")
 
+# Color limit
+color_limit = 123
+
 # Butonları yerleştirme
 buton_metinleri = ["Batma", "Çıkma", "Sağ", "Sol", "İleri", "Geri", "Kamera", "Reset", "Arm", "Disarm", "Stabilize", "Auto"]
 buton_fonksiyonlari = [btnBatma, btnCikma, btnSag, btnSol, btnIleri, btnGeri, btnCamera, btnReset, btnArm, btnDisarm, btnStabilize, btnAuto]
@@ -109,7 +112,7 @@ def find_mid_of_counters(mask, color, frame):
             cX, cY = 0, 0  # Default value if division by zero would occur
         max_area = cv2.contourArea(max_contour)
         x, y, w, h = cv2.boundingRect(max_contour)
-        if max_area > 500:
+        if max_area > color_limit:
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             return max_area, mask[y:y + h, x:x + w].sum() // 255, (cX, cY)
         else:
@@ -122,6 +125,8 @@ def find_mid_way(center1, center2):
     mid_y = (center1[1] + center2[1]) // 2
     return (mid_x, mid_y)
 
+    
+
 def calculate_distance(point1, point2):
     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
 
@@ -129,8 +134,8 @@ def calculate_distance(point1, point2):
 def start_video_capture():
     label_veri = tk.Label(label_frame_veri)
     label_veri.pack()
-
     def video_thread():
+        
         cap = cv2.VideoCapture(0)
 
         if not cap.isOpened():
@@ -145,8 +150,9 @@ def start_video_capture():
         out = cv2.VideoWriter(video_filename, fourcc, 20.0, (frame_width, frame_height))
 
         while cap.isOpened():
+            
             ret, frame = cap.read()
-
+            
             if ret:
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
                 
@@ -177,11 +183,11 @@ def start_video_capture():
                 max_green_area, green_pixels, green_center = find_mid_of_counters(mask_green, (0, 255, 0), frame)
                 max_yellow_area, yellow_pixels, yellow_center = find_mid_of_counters(mask_yellow, (0, 255, 255), frame)
                 
-                if max_red_area > 1000:
+                if max_red_area > color_limit:
                     color_detected = f"Kirmizi: {red_pixels} piksel"
-                elif max_green_area > 1000:
+                elif max_green_area > color_limit:
                     color_detected = f"Yesil: {green_pixels} piksel"
-                elif max_yellow_area > 1000:
+                elif max_yellow_area > color_limit:
                     color_detected = f"Sari: {yellow_pixels} piksel"
                 else:
                     color_detected = "Renk Yok"
@@ -192,6 +198,12 @@ def start_video_capture():
                 else:
                     dist_red_yellow = 0
                 
+                # alttaki 4 satır gemi kendini ortalaması için  yapıldı
+                if green_center != (0, 0) and red_center != (0, 0):
+                    dist_green_red = calculate_distance(green_center, red_center)
+                else:
+                    dist_green_red = 0
+
                 if green_center != (0, 0) and yellow_center != (0, 0):
                     dist_green_yellow = calculate_distance(green_center, yellow_center)
                 else:
@@ -205,7 +217,49 @@ def start_video_capture():
                 
                 if mid_way != (0, 0):  # Eğer geçerli bir orta nokta varsa
                     cv2.circle(frame, mid_way, 10, (255, 0, 255), -1)
+                
+                # kamera orjini
+                orjin=(322,240)
+                cv2.circle(frame,orjin,5,(0,0,0),-1)
+        
+                a,b=mid_way
+                def turn_left():
+                    pass
+                def turn_right():
+                    pass
+                def find_balls():
+                    # Düz ilerle
+                    pass
+                # daha fazla ayrıntı eklendi, artık topları teker teker seçebiliyor
+                def check_balls(red_center, green_center, yellow_center, orjin, warning_txt):
+                    orjin_x_range = range(orjin[0] - 300, orjin[0] + 300)
+                    
+                    red_in_range = red_center[0] in orjin_x_range
+                    green_in_range = green_center[0] in orjin_x_range
+                    yellow_in_range = yellow_center[0] in orjin_x_range
+                    warning_txt = "Cant see"
+                    saw = 0
+                    if red_in_range: 
+                        saw+=1
+                        warning_txt = "kirmizi gorunuyor "
+                    if green_in_range:
+                        saw+=1
+                        warning_txt += "yesil gozukuyor "
+                    if yellow_in_range:
+                        saw+=1
+                        warning_txt += "sari gorunuyor "
+                    
 
+                    choose_way(red_center , green_center , yellow_center)
+                    return warning_txt
+                
+                def choose_way():
+                    # sari center yoksa kırmızı ve yeşilin ortasını bulup yuvarlak çiz
+
+
+                    #sari center varsa kırmızı ve sari , yeşil ve sari arasındaki farka göre yolu bul yuvarlak çiz
+                    pass        
+                
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(frame_rgb)
                 imgtk = ImageTk.PhotoImage(img)
@@ -214,7 +268,7 @@ def start_video_capture():
                     label_veri.imgtk = imgtk
                     label_veri.config(image=imgtk)
                     height, width, _ = frame.shape
-                    update_sonuc_panel(f"Görüntü Boyutu: {width}x{height}\n{color_detected}")
+                    update_sonuc_panel(f"Görüntü Boyutu: {width}x{height}\n{color_detected}\n")
 
                 master.after(0, update_gui)
                 out.write(frame)
