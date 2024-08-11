@@ -100,7 +100,7 @@ def update_sonuc_panel(text):
     label = tk.Label(label_frame_sonuc, text=text)
     label.pack()
 
-def find_mid_of_counters(mask, color, frame):
+def find_center_of_counters(mask, color, frame):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if contours:
         max_contour = max(contours, key=cv2.contourArea)
@@ -125,7 +125,18 @@ def find_mid_way(center1, center2):
     mid_y = (center1[1] + center2[1]) // 2
     return (mid_x, mid_y)
 
-    
+def turn_left():
+    update_sonuc_panel("Sola dön")
+    pass
+
+def turn_right():
+    update_sonuc_panel("Sağa dön")
+    pass
+
+def go_straight():
+    update_sonuc_panel("Düz git")
+    pass
+
 
 def calculate_distance(point1, point2):
     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
@@ -179,9 +190,9 @@ def start_video_capture():
                 green_output = cv2.bitwise_and(frame, frame, mask=mask_green)
                 yellow_output = cv2.bitwise_and(frame, frame, mask=mask_yellow)
 
-                max_red_area, red_pixels, red_center = find_mid_of_counters(mask_red, (0, 0, 255), frame)
-                max_green_area, green_pixels, green_center = find_mid_of_counters(mask_green, (0, 255, 0), frame)
-                max_yellow_area, yellow_pixels, yellow_center = find_mid_of_counters(mask_yellow, (0, 255, 255), frame)
+                max_red_area, red_pixels, red_center = find_center_of_counters(mask_red, (0, 0, 255), frame)
+                max_green_area, green_pixels, green_center = find_center_of_counters(mask_green, (0, 255, 0), frame)
+                max_yellow_area, yellow_pixels, yellow_center = find_center_of_counters(mask_yellow, (0, 255, 255), frame)
                 
                 if max_red_area > color_limit:
                     color_detected = f"Kirmizi: {red_pixels} piksel"
@@ -192,73 +203,88 @@ def start_video_capture():
                 else:
                     color_detected = "Renk Yok"
 
-                # Sarı ile kırmızı ve sarı ile yeşil arasındaki mesafeleri hesapla
-                if red_center != (0, 0) and yellow_center != (0, 0):
-                    dist_red_yellow = calculate_distance(red_center, yellow_center)
-                else:
-                    dist_red_yellow = 0
-                
-                # alttaki 4 satır gemi kendini ortalaması için  yapıldı
-                if green_center != (0, 0) and red_center != (0, 0):
-                    dist_green_red = calculate_distance(green_center, red_center)
-                else:
-                    dist_green_red = 0
-
-                if green_center != (0, 0) and yellow_center != (0, 0):
-                    dist_green_yellow = calculate_distance(green_center, yellow_center)
-                else:
-                    dist_green_yellow = 0
-
-                # En uzun mesafeyi bul ve orta noktaya mor yuvarlak çiz
-                if dist_red_yellow > dist_green_yellow:
-                    mid_way = find_mid_way(red_center, yellow_center)
-                else:
-                    mid_way = find_mid_way(green_center, yellow_center)
-                
-                if mid_way != (0, 0):  # Eğer geçerli bir orta nokta varsa
-                    cv2.circle(frame, mid_way, 10, (255, 0, 255), -1)
-                
-                # kamera orjini
-                orjin=(322,240)
-                cv2.circle(frame,orjin,5,(0,0,0),-1)
-        
-                a,b=mid_way
-                def turn_left():
-                    pass
-                def turn_right():
-                    pass
-                def find_balls():
-                    # Düz ilerle
-                    pass
-                # daha fazla ayrıntı eklendi, artık topları teker teker seçebiliyor
-                def check_balls(red_center, green_center, yellow_center, orjin, warning_txt):
-                    orjin_x_range = range(orjin[0] - 300, orjin[0] + 300)
+                # GÖRDÜĞÜ FARKLI RENKTE TOP SAYISI
+                def check_balls(red_center, green_center, yellow_center, orjin):
+                    orjin_x_range = range(orjin[0] - 310, orjin[0] + 310)
                     
                     red_in_range = red_center[0] in orjin_x_range
                     green_in_range = green_center[0] in orjin_x_range
                     yellow_in_range = yellow_center[0] in orjin_x_range
                     warning_txt = "Cant see"
-                    saw = 0
+                    ball_counter = 0
                     if red_in_range: 
-                        saw+=1
                         warning_txt = "kirmizi gorunuyor "
+                        ball_counter += 1
                     if green_in_range:
-                        saw+=1
                         warning_txt += "yesil gozukuyor "
+                        ball_counter += 1
                     if yellow_in_range:
-                        saw+=1
                         warning_txt += "sari gorunuyor "
-                    
-
-                    choose_way(red_center , green_center , yellow_center)
-                    return warning_txt
+                        ball_counter += 1
+                    update_sonuc_panel(warning_txt)
+                    return ball_counter
                 
-                def choose_way():
-                    # sari center yoksa kırmızı ve yeşilin ortasını bulup yuvarlak çiz
+    # ORTA NOKTA BULMA VE YUVARLAK ÇİZME
+                # En uzun mesafeyi bul ve orta noktaya mor yuvarlak çiz 
+        # KONTURLAR ARASI MESAFE
+                # Sarı ile kırmızı ve sarı ile yeşil arasındaki mesafeleri hesapla
+                def find_widest_distance(red_center, green_center, yellow_center):
+                    if red_center != (0, 0) and yellow_center != (0, 0):
+                        dist_red_yellow = calculate_distance(red_center, yellow_center)
+                    else:
+                        dist_red_yellow = 0
+                    
+                    # Yeşil ile sarı arasındaki mesafeyi hesapla
+                    if green_center != (0, 0) and yellow_center != (0, 0):
+                        dist_green_yellow = calculate_distance(green_center, yellow_center)
+                    else:
+                        dist_green_yellow = 0
 
+                    # Yeşil ile kırmızı ve yeşil ile sarı arasındaki mesafeleri hesapla
+                    if green_center != (0, 0) and red_center != (0, 0):
+                        dist_green_red = calculate_distance(green_center, red_center)
+                    else:
+                        dist_green_red = 0
+                    return dist_red_yellow, dist_green_yellow, dist_green_red
+                
+                dist_red_yellow, dist_green_yellow, dist_green_red = find_widest_distance(red_center, green_center, yellow_center)
+                # Sari varsa 
+                def find_ways():
+                    # EĞER İKİ TOP GÖRÜYORSA YOL ÇİZ YOKSA DÜZ GİT
+                    ball_count = check_balls(red_center, green_center, yellow_center, orjin)
+                    if ball_count >= 2:
+                        mid_way = (0, 0)
+                        if yellow_center != (0, 0) and (red_center != (0, 0) or green_center != (0, 0)):
+                            if dist_red_yellow > dist_green_yellow:
+                                mid_way = find_mid_way(red_center, yellow_center)
+                            else:
+                                mid_way = find_mid_way(green_center, yellow_center)
+                        elif red_center != (0, 0) and green_center != (0, 0):
+                            mid_way = find_mid_way(green_center, red_center)
+                        else:
+                            mid_way = (0, 0)
+                        # Eğer orta nokta yoksa topları bul
+                        if mid_way != (0, 0):
+                            cv2.circle(frame , mid_way , 10 ,(255 ,0 ,255) , -1)
+                    else :
+                        mid_way = (0, 0)
 
-                    #sari center varsa kırmızı ve sari , yeşil ve sari arasındaki farka göre yolu bul yuvarlak çiz
-                    pass        
+    # KAMERA ORTA NOKTASI İLE DENKLEŞTİRME
+                # kamera orjini
+                orjin=(322,240)
+
+                def drive_boat(mid_way, orjin):
+                    cv2.circle(frame,orjin,5,(0,0,0),-1)
+            
+                    mid_way_x , mid_way_y = mid_way
+                    
+                    if mid_way_x < orjin[0]-20:
+                        turn_right()
+                    elif mid_way_x > orjin[0]+20:
+                        turn_left()
+                    else:
+                        go_straight()
+                
                 
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(frame_rgb)
