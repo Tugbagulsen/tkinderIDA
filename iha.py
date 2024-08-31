@@ -8,6 +8,12 @@ from PIL import Image, ImageTk
 import threading
 import time
 from datetime import datetime
+import pytesseract
+## Tesseract dosyasından fonksiyonu alıp buraya yapıştırıyoruz
+from tesseract import rakam_ve_konum_oku
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
 
 # Tkinter ana penceresi
 master = tk.Tk()
@@ -50,9 +56,9 @@ label_frame_fonksiyon = label_frame_olusturma(master, "Fonksiyon", 0.6, 0.6, 0.3
 def btnCamera():
     start_video_capture()
 
-# Diğer buton fonksiyonları    
+# Diğer buton fonksiyonları
 def btnBatma():
-    messagebox.showinfo("Bilgi", "Batma butonuna tikandi")    
+    messagebox.showinfo("Bilgi", "Batma butonuna tikandi")
 def btnCikma():
     messagebox.showinfo("Bilgi", "Çıkma butonuna tıklandı")
 
@@ -142,12 +148,6 @@ def start_video_capture():
 
          
                 
-
-
-
-
-
-
     def video_thread():
         
         cap = cv2.VideoCapture(0)
@@ -287,7 +287,7 @@ def start_video_capture():
                         return "üç topu da görüyorum"
                   
                     elif black_in_range:
-                        return "gemiyi görüyorum"   
+                        return "gemiyi görüyorum"
                     else:
                         return "üç topu da görmüyorum"
                     
@@ -300,13 +300,13 @@ def start_video_capture():
                             return "ihayı sağa kır"
                         elif x < orjin[0] - 20:
                             öneri1_metin = "ihayı sola kır"
-                            return "ihayı sola kır"    
+                            return "ihayı sola kır"
                         else:
                             öneri1_metin = "iha gemiye ortalı"
                             return "iha gemiye ortalı"
                     else:
-                        öneri1_metin="gemi gözükmüyor" 
-                        return "gemi gözükmüyor"     
+                        öneri1_metin="gemi gözükmüyor"
+                        return "gemi gözükmüyor"
                 
                 def öneri2_fn(x_ekseni,black_center):
 
@@ -316,12 +316,12 @@ def start_video_capture():
                             return "gemiyi sağa kır"
                         elif x < x_ekseni[1] - 20:
                             öneri2_metin = "gemiyi sola kır"
-                            return "gemiyi sola kır"    
+                            return "gemiyi sola kır"
                         else:
                             öneri2_metin = "dümdüz devam"
                             return "dümdüz devam"
                     else:
-                        öneri2_metin="gemi gözükmüyor" 
+                        öneri2_metin="gemi gözükmüyor"
                         return "gemi gözükmüyor"
 
                   

@@ -8,6 +8,10 @@ import threading
 import time
 from datetime import datetime
 import pigpio
+import pytesseract
+## Tesseract dosyasından fonksiyonu import et
+from tesseract import rakam_ve_konum_oku
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
 
@@ -51,9 +55,9 @@ label_frame_fonksiyon = label_frame_olusturma(master, "Fonksiyon", 0.6, 0.6, 0.3
 def btnCamera():
     start_video_capture()
 
-# Diğer buton fonksiyonları    
+# Diğer buton fonksiyonları
 def btnBatma():
-    messagebox.showinfo("Bilgi", "Batma butonuna tikandi")    
+    messagebox.showinfo("Bilgi", "Batma butonuna tikandi")
 def btnCikma():
     messagebox.showinfo("Bilgi", "Çıkma butonuna tıklandı")
 
