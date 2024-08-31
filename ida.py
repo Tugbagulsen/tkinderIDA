@@ -1,4 +1,4 @@
-# ida3 teki boş yerleri sildim
+
 import cv2
 import numpy as np
 import tkinter as tk
@@ -7,6 +7,9 @@ from PIL import Image, ImageTk
 import threading
 import time
 from datetime import datetime
+import pigpio
+
+
 
 # Tkinter ana penceresi
 master = tk.Tk()
@@ -125,18 +128,60 @@ def find_mid_way(center1, center2):
     mid_y = (center1[1] + center2[1]) // 2
     return (mid_x, mid_y)
 
+# Motorların bağlı olduğu GPIO pinleri
+left_motor_pin = 17   # Sol motor ESC pini
+right_motor_pin = 18  # Sağ motor ESC pini
+
+# ESC'leri kontrol etmek için pigpio nesnesi oluştur
+pi = pigpio.pi()
+
+# PWM genişlikleri (Mikro-saniye cinsinden)
+min_pulse_width = 1000  # Minimum PWM genişliği (Motor durur)
+max_pulse_width = 2000  # Maksimum PWM genişliği (Motor tam hız)
+
+step_delay = 0.01  # Kademeler arasındaki gecikme süresi (saniye)
+step_size = 10  # Kademeli artış miktarı
+
+def gradual_move(pin, target_pulse_width):
+    current_pulse_width = pi.get_servo_pulsewidth(pin)
+    step = step_size if target_pulse_width > current_pulse_width else -step_size
+
+    for pulse_width in range(current_pulse_width, target_pulse_width, step):
+        pi.set_servo_pulsewidth(pin, pulse_width)
+        time.sleep(step_delay)
+    
+    pi.set_servo_pulsewidth(pin, target_pulse_width)
 def turn_left():
     update_sonuc_panel("Sola dön")
+    # Sol motoru yavaşlat, sağ motoru hızlandır
+    gradual_move(left_motor_pin, min_pulse_width)
+    gradual_move(right_motor_pin, max_pulse_width)
+    time.sleep(1)
+    stop_motors()
     pass
 
 def turn_right():
     update_sonuc_panel("Sağa dön")
+    # Sağ motoru yavaşlat, sol motoru hızlandır
+    gradual_move(left_motor_pin, max_pulse_width)
+    gradual_move(right_motor_pin, min_pulse_width)
+    time.sleep(1)
+    stop_motors()
     pass
-
 def go_straight():
     update_sonuc_panel("Düz git")
+    # İki motoru aynı hızda çalıştır
+    gradual_move(left_motor_pin, max_pulse_width)
+    gradual_move(right_motor_pin, max_pulse_width)
+    time.sleep(1)
+    stop_motors()
     pass
 
+def stop_motors():
+    # Motorları durdur
+    gradual_move(left_motor_pin, min_pulse_width)
+    gradual_move(right_motor_pin, min_pulse_width)
+    
 
 def calculate_distance(point1, point2):
     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
@@ -311,3 +356,22 @@ def start_video_capture():
 
 # Tkinter ana döngüsü
 master.mainloop()
+
+
+#TODO:
+#ilk gorev bittikten sonraki kısımda izlenecek algoritmaya baglı bu fonksiyon guncellenecek
+"""def toplardansonra(gemi_görüyor_fn, orjin,red_center,öneri3_metin):
+                    x_min, x_max = orjin[0] - 300, orjin[0] + 300
+                    red_in_range = x_min <= red_center[0] <= x_max
+                    
+                    if gemi_uyarısı_metin == "üç topu da görmüyorum":
+                        öneri3_metin = "80 derece sağa kır"
+                    elif gemi_uyarısı_metin == "kırmızı topu görüyorum":
+                        if red_center[0]+200 < orjin[0]:  # Kırmızı top geminin sağındaysa
+                            öneri3_metin = "düz devam et"
+                        elif red_center[0] >= orjin[0]:  # Kırmızı top geminin solundaysa
+                            öneri3_metin = "sola kır"
+                    else:
+                        öneri3_metin = "daha parkurdan çıkmadık"
+                    
+                    return öneri3_metin"""
