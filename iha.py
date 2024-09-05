@@ -11,6 +11,7 @@ from datetime import datetime
 import pytesseract
 ## Tesseract dosyasından fonksiyonu alıp buraya yapıştırıyoruz
 from tesseract import rakam_ve_konum_oku
+from takip import mesafe_hesapla, yon_hesapla, gemi_koordinat_bul, donus_acisi
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
@@ -329,13 +330,7 @@ def start_video_capture():
                   
                    
                      
-                             
-             
-                            
-                    
-                    
-                    
-                    
+            
 
                 
                 gemi_uyarısı_metin="birazdan gemi uyarısı geliyor..."
