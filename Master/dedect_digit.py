@@ -4,7 +4,7 @@ import pytesseract
 # Tesseract'a giden yolu belirt
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-def rakam_ve_konum_oku(goruntu):
+def read_locate_digit(goruntu):
     # Görüntünün genişliğini ve yüksekliğini al
     yukseklik, genislik = goruntu.shape[:2]
     
@@ -22,7 +22,7 @@ def rakam_ve_konum_oku(goruntu):
     gri = cv2.medianBlur(gri, 5)
     
     # Tesseract ile OCR yaparak verileri elde et
-    custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=123'
+    custom_config = r'--oem 3 --psm 6 -l eng -c tessedit_char_whitelist=123'
     veri = pytesseract.image_to_data(gri, config=custom_config, output_type=pytesseract.Output.DICT)
     
     # Rakamlar için ayrı listeler
@@ -53,14 +53,20 @@ def rakam_ve_konum_oku(goruntu):
 
 def main():
     cap = cv2.VideoCapture(0)
+    
+    # Kameranın açılabilirliğini kontrol et
+    if not cap.isOpened():
+        print("Kamera açılamadı.")
+        return
 
     while True:
         ret, frame = cap.read()
         if not ret:
+            print("Görüntü okunamadı.")
             break
 
         # Görüntüdeki 1, 2 ve 3 rakamlarını ve konumlarını oku
-        konumlar_sözlüğü = rakam_ve_konum_oku(frame)
+        konumlar_sözlüğü = read_locate_digit(frame)
         
         # Tespit edilen rakamların etrafına dikdörtgen çiz ve rakamı ekrana yazdır
         for rakam, konumlar in konumlar_sözlüğü.items():
@@ -70,11 +76,12 @@ def main():
                 cv2.putText(frame, rakam, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
                 print(f"Rakam: {rakam}, Konum: ({x}, {y})")
 
-        # Görüntüyü ekranda göster
+        # Pencere boyutlandırılabilir olsun
+        cv2.namedWindow('Kamera', cv2.WINDOW_NORMAL)
         cv2.imshow('Kamera', frame)
 
         # Çıkmak için 'q' tuşuna basın
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(10) & 0xFF == ord('q'):  # 10ms gecikme eklendi
             break
 
     # Kaynakları serbest bırak

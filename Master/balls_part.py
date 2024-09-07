@@ -75,9 +75,9 @@ def go_straight():
     stop_motors()
 
 def stop_motors():
-    gradual_move(left_motor_pin, min_pulse_width)
-    gradual_move(right_motor_pin, min_pulse_width)
-    
+    pi.set_servo_pulsewidth(left_motor_pin, 0)
+    pi.set_servo_pulsewidth(right_motor_pin, 0)
+
 def drive_direction(mid_way, orjin):
     if mid_way[0] < orjin[0] - 50:
         turn_left()
@@ -85,7 +85,6 @@ def drive_direction(mid_way, orjin):
         turn_right()
     else:
         go_straight()
-    
 
 def check_balls(red_center, green_center, yellow_center, orjin):
     orjin_x_range = range(orjin[0] - 310, orjin[0] + 310)
@@ -124,8 +123,7 @@ def find_widest_distance(red_center, green_center, yellow_center):
         dist_green_red = 0
     return dist_red_yellow, dist_green_yellow, dist_green_red
 
-
-def find_ways(red_center, green_center, yellow_center , orjin , frame , dist_red_yellow , dist_green_yellow , dist_green_red):
+def find_ways(red_center, green_center, yellow_center, orjin, frame, dist_red_yellow, dist_green_yellow, dist_green_red):
     ball_count = check_balls(red_center, green_center, yellow_center, orjin)
     if ball_count >= 2:
         mid_way = (0, 0)
@@ -139,8 +137,8 @@ def find_ways(red_center, green_center, yellow_center , orjin , frame , dist_red
         else:
             mid_way = (0, 0)
         if mid_way != (0, 0):
-            cv2.circle(frame , mid_way , 10 ,(255 ,0 ,255) , -1)
-    else :
+            cv2.circle(frame, mid_way, 10, (255, 0, 255), -1)
+    else:
         mid_way = (0, 0)
     return mid_way
 
@@ -150,13 +148,11 @@ def drive_boat(frame):
     # RENKLER ICIN MAKSELER
     
     # Kırmızı renk için maske
-    lower_red1 = np.array([0, 120, 70])
+    lower_red1 = np.array([0, 50, 50])
     upper_red1 = np.array([10, 255, 255])
-    mask_red1 = cv2.inRange(hsv, lower_red1, upper_red1)
-    lower_red2 = np.array([170, 120, 70])
+    lower_red2 = np.array([170, 50, 50])
     upper_red2 = np.array([180, 255, 255])
-    mask_red2 = cv2.inRange(hsv, lower_red2, upper_red2)
-    mask_red = mask_red1 + mask_red2
+    mask_red = cv2.inRange(hsv, lower_red1, upper_red1) + cv2.inRange(hsv, lower_red2, upper_red2)
 
     # Yeşil renk için maske
     lower_green = np.array([36, 100, 100])
@@ -167,7 +163,15 @@ def drive_boat(frame):
     lower_yellow = np.array([20, 100, 100])
     upper_yellow = np.array([30, 255, 255])
     mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
-    while keyboard.is_pressed('q') == False:
+    
+    cap = cv2.VideoCapture(0)  # Kamera başlatma
+    orjin = (322, 240)  # Kameranın merkezi
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
         red_output = cv2.bitwise_and(frame, frame, mask=mask_red)
         green_output = cv2.bitwise_and(frame, frame, mask=mask_green)
         yellow_output = cv2.bitwise_and(frame, frame, mask=mask_yellow)
@@ -176,24 +180,20 @@ def drive_boat(frame):
         max_green_area, green_pixels, green_center = find_center_of_counters(mask_green, (0, 255, 0), frame)
         max_yellow_area, yellow_pixels, yellow_center = find_center_of_counters(mask_yellow, (0, 255, 255), frame)
 
-        if max_red_area > color_limit:
-            color_detected = f"Kirmizi: {red_pixels} piksel"
-        elif max_green_area > color_limit:
-            color_detected = f"Yesil: {green_pixels} piksel"
-        elif max_yellow_area > color_limit:
-            color_detected = f"Sari: {yellow_pixels} piksel"
-        else:
-            color_detected = "Renk Yok"
-
         dist_red_yellow, dist_green_yellow, dist_green_red = find_widest_distance(red_center, green_center, yellow_center)
 
-        orjin = (322, 240)  # Kameranın orijinal merkezi
-        mid_way = find_ways(red_center, green_center, yellow_center , orjin , frame , dist_red_yellow , dist_green_yellow , dist_green_red)
+        mid_way = find_ways(red_center, green_center, yellow_center, orjin, frame, dist_red_yellow, dist_green_yellow, dist_green_red)
 
         # Yönlendirme komutlarını çağır
         if mid_way != (0, 0):
             drive_direction(mid_way, orjin)
         else:
             go_straight()
+
+        cv2.imshow('Frame', frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
     
-    
+    cap.release()
+    cv2.destroyAllWindows()

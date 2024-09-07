@@ -7,16 +7,14 @@ import time
 import numpy as np
 import pytesseract
 from tkinderIDA.Master.balls_part import *
-from tkinderIDA.Master.tesseract import *
+from tkinderIDA.Master.dedect_digit import *
 from tkinderIDA.Master.ihas_part import *
 import keyboard
 
 # Tesseract'ın yolunu belirtin
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-
-
-# Tkinter GUI setup
+# Tkinter GUI Kurulumu
 root = tk.Tk()
 root.title("Ball Detection, OCR and Motor Control")
 root.geometry("800x600")
@@ -31,57 +29,31 @@ label_veri.pack()
 label_rakamlar = tk.Label(root, text="Tespit edilen rakamlar: Yok", font=("Arial", 16))
 label_rakamlar.pack(pady=10)
 
-# Function to start video capture
+# Video capture için iki ayrı thread kullanımı
 def start_video_capture():
+    # Bu kısımda kameranın index numarası belirtilmelidir
+    boat_camera = 0  # GEMİNİN KAMERASI
+    iha_camera = 1   # İHA KAMERASI
     
-# BU KISIMDA GEMININ KAMERASI KULLANILACAK
-    # GEMININ KAMERASI HANGISI ISE
-    boat_camera = 0
-    iha_camera = 1
+    cap_boat = cv2.VideoCapture(boat_camera)
+    cap_iha = cv2.VideoCapture(iha_camera)
     
-    cap = cv2.VideoCapture(boat_camera)  # Capture from default camera
-    if not cap.isOpened():
+    if not cap_boat.isOpened():
         messagebox.showerror("Error", "BOAT Camera not found or cannot be opened!")
         return
 
-    def video_thread_boat():
-        orjin = (320, 240)  # Define the center of the screen
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if ret:
-                # Color detection process (from your previous code)
-                hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                
-                drive_boat(frame)
-                # Convert the frame from BGR to RGB for Tkinter display
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                img = Image.fromarray(frame_rgb)
-                imgtk = ImageTk.PhotoImage(image=img)
-
-                label_veri.imgtk = imgtk
-                label_veri.config(image=imgtk)
-
-            time.sleep(0.05)
-
-        cap.release()
-        
-    cap = cv2.VideoCapture(iha_camera)  # Capture from iha camera
-    
-    if not cap.isOpened():
+    if not cap_iha.isOpened():
         messagebox.showerror("Error", "IHA Camera not found or cannot be opened!")
         return
-    
-    def video_thread_iha():
-        orjin = (320, 240)
-        while cap.isOpened():
-            ret, frame = cap.read()
+
+    def video_thread_boat():
+        while cap_boat.isOpened():
+            ret, frame = cap_boat.read()
             if ret:
-                ...
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                PORT = int(input("PORT: "))
-                IHA_commands(frame , PORT)
-                # Convert the frame from BGR to RGB for Tkinter display
+                drive_boat(frame)
+
+                # BGR -> RGB conversion for Tkinter
                 frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 img = Image.fromarray(frame_rgb)
                 imgtk = ImageTk.PhotoImage(image=img)
@@ -91,14 +63,35 @@ def start_video_capture():
 
             time.sleep(0.05)
 
-    cap.release()
-        
+        cap_boat.release()
 
-                
+    def video_thread_iha():
+        PORT = int(input("PORT: "))  # Port sadece bir kez alınır
+        while cap_iha.isOpened():
+            ret, frame = cap_iha.read()
+            if ret:
+                hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+                IHA_commands(frame, PORT)
 
-# Button to start video capture
+                # BGR -> RGB
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img = Image.fromarray(frame_rgb)
+                imgtk = ImageTk.PhotoImage(image=img)
+
+                label_veri.imgtk = imgtk
+                label_veri.config(image=imgtk)
+
+            time.sleep(0.05)
+
+        cap_iha.release()
+
+    # Bot ve iha için iki ayrı thread oluşturuldu
+    threading.Thread(target=video_thread_boat).start()
+    threading.Thread(target=video_thread_iha).start()
+
+# Start buton
 start_button = tk.Button(root, text="Start Video Capture", command=start_video_capture)
 start_button.pack(pady=20)
 
-# Start the Tkinter main loop
+# Tkinter main loop
 root.mainloop()

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pytesseract
 from PIL import Image
-from tesseract import *
+from tkinderIDA.Master.dedect_digit import *
 from balls_part import *
 import keyboard
 
@@ -58,13 +58,13 @@ def IHA_commands(frame , PORT):
     find_port(frame)
     
     # Limandakı sayıların algılanması ve konumlarının sözlük olarak döndürülmesi
-    konumlar_sözlüğü = rakam_ve_konum_oku(frame)
+    konumlar_sözlüğü = read_locate_digit(frame)
     
     # Girilen PORT değerine göre botun hareket kendi konumunu belirlemesi ve hareket etmesi
     def lead_toPort():
         
         
-        # Neslinin kodunu buraya yaz
+        # Neslinin ya da Muhammedin kodunu buraya yaz
         if PORT == 1:
             ...
         elif PORT == 2:
