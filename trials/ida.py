@@ -10,7 +10,7 @@ from datetime import datetime
 import pigpio
 import pytesseract
 ## Tesseract dosyasından fonksiyonu import et
-from tesseract import rakam_ve_konum_oku
+from tkinderIDA.Master.tesseract import rakam_ve_konum_oku
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 
