@@ -8,6 +8,7 @@ import numpy as np
 import pytesseract
 from tkinderIDA.Master.balls_part import *
 from tkinderIDA.Master.tesseract import *
+from tkinderIDA.Master.ihas_part import *
 import keyboard
 
 # Tesseract'ın yolunu belirtin
@@ -77,7 +78,20 @@ def start_video_capture():
             ret, frame = cap.read()
             if ret:
                 ...
-                        
+                hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+                PORT = int(input("PORT: "))
+                IHA_commands(frame , PORT)
+                # Convert the frame from BGR to RGB for Tkinter display
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                img = Image.fromarray(frame_rgb)
+                imgtk = ImageTk.PhotoImage(image=img)
+
+                label_veri.imgtk = imgtk
+                label_veri.config(image=imgtk)
+
+            time.sleep(0.05)
+
+    cap.release()
         
 
                 
