@@ -11,7 +11,7 @@ from datetime import datetime
 import pytesseract
 ## Tesseract dosyasından fonksiyonu alıp buraya yapıştırıyoruz
 from tkinderIDA.Master.dedect_digit import read_locate_digit
-from tkinderIDA.trials.takip import mesafe_hesapla, yon_hesapla, gemi_koordinat_bul, donus_acisi
+from tkinderIDA.Master.iha_lead import mesafe_hesapla, yon_hesapla, gemi_koordinat_bul, donus_acisi
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 

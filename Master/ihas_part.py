@@ -3,8 +3,11 @@ import numpy as np
 import pytesseract
 from PIL import Image
 from tkinderIDA.Master.dedect_digit import *
-from balls_part import *
+from tkinderIDA.Master.balls_part import *
+from tkinderIDA.Master.iha_lead import *
 import keyboard
+import pigpio
+
 
 def find_boat(frame):
     # Botun renginin algılanması
@@ -43,8 +46,28 @@ def find_port(frame):
             x, y, w, h = cv2.boundingRect(cnt)
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
             cv2.putText(frame, "Liman", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-            
-
+        
+# Girilen PORT değerine göre botun hareket kendi konumunu belirlemesi ve hareket etmesi
+def lead_toPort(konumlar_sözlüğü, PORT , frame):
+    # Neslinin ya da Muhammedin kodunu buraya yaz
+    if PORT == 1:
+        hedef_coord = konumlar_sözlüğü['1'][0]
+    elif PORT == 2:
+        hedef_coord= konumlar_sözlüğü['2'][0]
+    elif PORT == 3:
+        hedef_coord = konumlar_sözlüğü['3'][0]
+    else:
+        print("Geçersiz PORT değeri")
+        
+    boat_coord = gemi_koordinat_bul(frame)
+    if boat_coord[0]+20 > hedef_coord[0] : # Eğer yeterince limana yaklaştıysa dur
+        print("Limanın yanına ulaşıldı")
+        return
+    
+    degree = 16
+    while(15<degree):
+        degree = donus_acisi(frame, hedef_coord)
+        turn_left()
 
 def IHA_commands(frame , PORT):
     # Botun renginin algılanması
@@ -52,7 +75,7 @@ def IHA_commands(frame , PORT):
     
     
     # Botu dikdörtgene al konumu döndür
-    x_boat , y_boat = find_boat(frame)
+    # x_boat , y_boat = find_boat(frame)
     
     # Beyaz limanın renginin algılanması ve dikdörtgene alınması
     find_port(frame)
@@ -60,21 +83,11 @@ def IHA_commands(frame , PORT):
     # Limandakı sayıların algılanması ve konumlarının sözlük olarak döndürülmesi
     konumlar_sözlüğü = read_locate_digit(frame)
     
-    # Girilen PORT değerine göre botun hareket kendi konumunu belirlemesi ve hareket etmesi
-    def lead_toPort():
+    # IHA'ya gore hareket
+    while True:
+        lead_toPort(konumlar_sözlüğü, PORT , frame)
         
-        
-        # Neslinin ya da Muhammedin kodunu buraya yaz
-        if PORT == 1:
-            ...
-        elif PORT == 2:
-            ...
-        elif PORT == 3:
-            ...
-        else:
-            ...
-            
-    while keyboard.is_pressed() == False:
-        lead_toPort()
+        if True: # Gemi yeterince yaklaşmışsa çık
+            break
     
     

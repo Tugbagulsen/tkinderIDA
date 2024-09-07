@@ -40,7 +40,7 @@ def gemi_koordinat_bul(frame):
             merkez_y = y + h // 2
             cv2.putText(frame, f"Koordinatlar: ({merkez_x}, {merkez_y})", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
             return merkez_x, merkez_y
-    
+    print("Gemi bulunamadı!")
     return None, None  # Eğer cisim bulunamazsa None döndür
 
 #5 SN ARALIKLA GEMİYİ KONTROL EDEREK HEDEF KOORDİNATA GİDİP GİTMEDİGİNİ KONTROL EDER
