@@ -35,16 +35,21 @@ def rakam_ve_konum_oku(goruntu):
         if veri['text'][i] in ['1', '2', '3']:
             x = veri['left'][i] + sol_kesim  # Kırpılmış görüntüdeki x koordinatını orijinal görüntüye göre ayarla
             y = veri['top'][i]
-            w = veri['width'][i]
-            h = veri['height'][i]
             if veri['text'][i] == '1':
-                birler.append((x, y, w, h))
+                birler.append((x, y))
             elif veri['text'][i] == '2':
-                ikiler.append((x, y, w, h))
+                ikiler.append((x, y))
             elif veri['text'][i] == '3':
-                ucler.append((x, y, w, h))
+                ucler.append((x, y))
     
-    return birler, ikiler, ucler
+    # Konumları string olarak döndür
+    konumlar_sözlüğü = {
+        '1': [f"({x}, {y})" for (x, y) in birler],
+        '2': [f"({x}, {y})" for (x, y) in ikiler],
+        '3': [f"({x}, {y})" for (x, y) in ucler]
+    }
+    
+    return konumlar_sözlüğü
 
 def main():
     cap = cv2.VideoCapture(0)
@@ -55,23 +60,15 @@ def main():
             break
 
         # Görüntüdeki 1, 2 ve 3 rakamlarını ve konumlarını oku
-        birler, ikiler, ucler = rakam_ve_konum_oku(frame)
+        konumlar_sözlüğü = rakam_ve_konum_oku(frame)
         
         # Tespit edilen rakamların etrafına dikdörtgen çiz ve rakamı ekrana yazdır
-        for (x, y, w, h) in birler:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(frame, '1', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-            print(f"Rakam: 1, Konum: ({x}, {y})")
-        
-        for (x, y, w, h) in ikiler:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(frame, '2', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-            print(f"Rakam: 2, Konum: ({x}, {y})")
-        
-        for (x, y, w, h) in ucler:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-            cv2.putText(frame, '3', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-            print(f"Rakam: 3, Konum: ({x}, {y})")
+        for rakam, konumlar in konumlar_sözlüğü.items():
+            for konum in konumlar:
+                x, y = map(int, konum.strip('()').split(', '))
+                cv2.rectangle(frame, (x, y), (x + 10, y + 10), (0, 255, 0), 2)  # Genişlik ve yüksekliği basitçe 10 olarak ayarladık
+                cv2.putText(frame, rakam, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                print(f"Rakam: {rakam}, Konum: ({x}, {y})")
 
         # Görüntüyü ekranda göster
         cv2.imshow('Kamera', frame)
