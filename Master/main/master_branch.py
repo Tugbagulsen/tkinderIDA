@@ -1,7 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
+sys.path.append('c:/Users/Ahmet/Documents/GitHub/tkinderIDA/Master/test/driving/')
+
 from gui import *
+
 
 import cv2
 
@@ -17,11 +20,11 @@ import numpy as np
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-from balls_part import *
+from main_driving.balls_part import *
 from dedect_digit import *
-from tkinderIDA.Master.IHA.ihas_part import *
-from tkinderIDA.Master.IHA.IHA_Muhamemed import *
-from tkinderIDA.Master.IHA.IHA_Nesli import *
+from main_driving.ihas_part import *
+from main_driving.IHA_Muhamemed import *
+from main_driving.IHA_Nesli import *
 
 def btnCamera():
     start_video_capture()
