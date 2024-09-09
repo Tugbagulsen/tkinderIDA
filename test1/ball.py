@@ -3,6 +3,9 @@ import numpy as np
 import time
 import pigpio
 import keyboard
+                            ### ************ ###
+# Yorum satırları bu dosyada 18-54 arası ayrıca 60,63,66 ve 200. satırda bulunmaktadır.
+                            ### ************ ###
 
 # Motorların bağlı olduğu GPIO pinleri
 left_motor_pin = 17
@@ -12,9 +15,10 @@ right_motor_pin = 18
 min_pulse_width = 1000
 max_pulse_width = 2000
 
+"""
 # pigpio instance
 #pi = pigpio.pi()
-"""
+
 def gradual_move(pin, target_pulse_width, step_size=10, step_delay=0.01):
     current_pulse_width = pi.get_servo_pulsewidth(pin)
     step = step_size if target_pulse_width > current_pulse_width else -step_size
@@ -48,6 +52,8 @@ def stop_motors():
     pi.set_servo_pulsewidth(right_motor_pin, 0)
 
 """
+
+
 def drive_direction(mid_way, orjin):
     if mid_way[0] < orjin[0] - 50:
         print("sol")
@@ -190,13 +196,11 @@ def drive_boat(ret , frame):
         drive_direction(mid_way, orjin)
         print("Yolu buldu gitti")
     else:
+        
         #go_straight()
         print("YOL BULAMADI DÜZ GİTTİ")
         
-
-    
-
-    
+   
 def main():
     ...
 
