@@ -13,8 +13,8 @@ min_pulse_width = 1000
 max_pulse_width = 2000
 
 # pigpio instance
-pi = pigpio.pi()
-
+#pi = pigpio.pi()
+"""
 def gradual_move(pin, target_pulse_width, step_size=10, step_delay=0.01):
     current_pulse_width = pi.get_servo_pulsewidth(pin)
     step = step_size if target_pulse_width > current_pulse_width else -step_size
@@ -47,13 +47,17 @@ def stop_motors():
     pi.set_servo_pulsewidth(left_motor_pin, 0)
     pi.set_servo_pulsewidth(right_motor_pin, 0)
 
+"""
 def drive_direction(mid_way, orjin):
     if mid_way[0] < orjin[0] - 50:
-        turn_left()
+        print("sol")
+        #turn_left()
     elif mid_way[0] > orjin[0] + 50:
-        turn_right()
+        print("sağ")
+        #turn_right()
     else:
-        go_straight()
+        print("düz")
+        #go_straight()
         
 
 
@@ -87,8 +91,6 @@ def find_mid_way(center1, center2):
 
 def calculate_distance(point1, point2):
     return np.sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2)
-
-
 
 def check_balls(red_center, green_center, yellow_center, orjin):
     orjin_x_range = range(orjin[0] - 310, orjin[0] + 310)
@@ -146,7 +148,7 @@ def find_ways(red_center, green_center, yellow_center, orjin, frame, dist_red_ye
         mid_way = (0, 0)
     return mid_way
 
-def drive_boat(frame):
+def drive_boat(ret , frame):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
     # RENKLER ICIN MAKSELER
@@ -167,37 +169,36 @@ def drive_boat(frame):
     lower_yellow = np.array([20, 100, 100])
     upper_yellow = np.array([30, 255, 255])
     mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
-                                                                                    #            A        c                             B            C
-    cap = cv2.VideoCapture(0)  # Kamera başlatma
+
     orjin = (322, 240)  # Kameranın merkezi
  
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-                                                                                             #              G
-        red_output = cv2.bitwise_and(frame, frame, mask=mask_red)
-        green_output = cv2.bitwise_and(frame, frame, mask=mask_green)                              
-        yellow_output = cv2.bitwise_and(frame, frame, mask=mask_yellow)
 
-        max_red_area, red_pixels, red_center = find_center_of_counters(mask_red, (0, 0, 255), frame)
-        max_green_area, green_pixels, green_center = find_center_of_counters(mask_green, (0, 255, 0), frame)
-        max_yellow_area, yellow_pixels, yellow_center = find_center_of_counters(mask_yellow, (0, 255, 255), frame)
+    red_output = cv2.bitwise_and(frame, frame, mask=mask_red)
+    green_output = cv2.bitwise_and(frame, frame, mask=mask_green)
+    yellow_output = cv2.bitwise_and(frame, frame, mask=mask_yellow)
 
-        dist_red_yellow, dist_green_yellow, dist_green_red = find_widest_distance(red_center, green_center, yellow_center)
+    max_red_area, red_pixels, red_center = find_center_of_counters(mask_red, (0, 0, 255), frame)
+    max_green_area, green_pixels, green_center = find_center_of_counters(mask_green, (0, 255, 0), frame)
+    max_yellow_area, yellow_pixels, yellow_center = find_center_of_counters(mask_yellow, (0, 255, 255), frame)
 
-        mid_way = find_ways(red_center, green_center, yellow_center, orjin, frame, dist_red_yellow, dist_green_yellow, dist_green_red)
+    dist_red_yellow, dist_green_yellow, dist_green_red = find_widest_distance(red_center, green_center, yellow_center)
 
-        # Yönlendirme komutlarını çağır
-        if mid_way != (0, 0):
-            drive_direction(mid_way, orjin)
-        else:
-            go_straight()
+    mid_way = find_ways(red_center, green_center, yellow_center, orjin, frame, dist_red_yellow, dist_green_yellow, dist_green_red)
 
-        cv2.imshow('Frame', frame)
+    # Yönlendirme komutlarını çağır
+    if mid_way != (0, 0):
+        drive_direction(mid_way, orjin)
+        print("Yolu buldu gitti")
+    else:
+        #go_straight()
+        print("YOL BULAMADI DÜZ GİTTİ")
+        
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
     
-    cap.release()
-    cv2.destroyAllWindows()
+
+    
+def main():
+    ...
+
+if __name__ == '__main__':
+    main()
