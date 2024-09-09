@@ -10,7 +10,6 @@ from datetime import datetime
 import pigpio
 import pytesseract
 ## Tesseract dosyasından fonksiyonu import et
-from tkinderIDA.Master.dedect_digit import read_locate_digit
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 

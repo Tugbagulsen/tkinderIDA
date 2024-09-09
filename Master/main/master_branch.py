@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
 import sys
-sys.path.append('c:/Users/Ahmet/Documents/GitHub/tkinderIDA/Master/test/driving/')
 
 from gui import *
 
@@ -19,6 +18,7 @@ import numpy as np
 
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+sys.path.append('c:/Users/Ahmet/Documents/GitHub/tkinderIDA/Master/test/driving/')
 
 from main_driving.balls_part import *
 from dedect_digit import *
@@ -123,7 +123,7 @@ def start_video_capture():
             ret, frame = cap_boat.read()
             if ret:
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                drive_boat(frame)  # Bu fonksiyonun düzgün tanımlandığından emin olun
+                #drive_boat(frame)  # Bu fonksiyonun düzgün tanımlandığından emin olun
                 out.write(frame)  # Videoyu kaydet
             time.sleep(0.05)
 

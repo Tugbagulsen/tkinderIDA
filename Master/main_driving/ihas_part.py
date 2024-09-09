@@ -2,10 +2,10 @@ import cv2
 import numpy as np
 import pytesseract
 from PIL import Image
-from dedect_digit import *
+from tkinderIDA.Master.main.dedect_digit import *
 from balls_part import *
-from tkinderIDA.Master.IHA.IHA_Nesli import *
-from tkinderIDA.Master.IHA.IHA_Muhamemed import *
+from tkinderIDA.Master.main_driving.IHA_Nesli import *
+from tkinderIDA.Master.main_driving.IHA_Muhamemed import *
 import keyboard
 import pigpio
 
@@ -59,7 +59,7 @@ def lead_toPortNesli(konumlar_sözlüğü, PORT , frame):
         hedef_coord = konumlar_sözlüğü['3'][0]
     else:
         print("Geçersiz PORT değeri")
-        
+
     boat_coord = gemi_koordinat_bul(frame)
     if boat_coord[0]+20 > hedef_coord[0] : # Eğer yeterince limana yaklaştıysa dur
         print("Limanın yanına ulaşıldı")
