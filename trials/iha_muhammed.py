@@ -1,4 +1,73 @@
+"""
+import cv2
+import numpy as np
+from triangle_detection import detect_triangle  # import
 
+cap = cv2.VideoCapture(0)
+
+while True:
+    ret, frame = cap.read()
+    if not ret:
+        break
+
+    # Üçgen algılama
+    frame, triangle_center, triangle_detected = detect_triangle(frame)
+    
+    
+    frame = cv2.resize(frame, (640, 480))  # Çözünürlüğü 640x480 olarak ayarla
+
+    # OCR işlemini her karede yap
+    tesseract4.rakam_ve_konum_oku(frame)  # Sadece 'frame' gönderilir
+
+    # OCR sonucu 'orta_nokta2' değişkenini kontrol edin
+    global orta_nokta2
+    print(f"Orta Nokta 2: {orta_nokta2}")
+
+    # Gemi ortalama hesapla (örneğin red_center ve green_center)
+    orta_yol = find_mid_way(red_center, green_center)
+
+    # Triangle_center kontrol
+    x_red, y_red = triangle_center
+    print(f"Triangle Center: {triangle_center}")
+
+    # Çizim işlemleri ve koordinatlar
+    y_nokta = y_red - 100
+    nokta_koordinat = (x_red, y_nokta)
+    cv2.circle(frame, nokta_koordinat, 5, (0, 255, 0), -1)
+
+    # Görüntüyü işleme
+    frame = process_frame(frame, nokta_koordinat)
+
+    # X ekseni başlangıç noktaları
+    x_ekseni_baslangic = (x_red, y_nokta)
+    x_ekseni_bitis = (frame.shape[1] - 1, y_nokta)
+    orta_nokta = (x_red, y_nokta)
+
+    if orta_nokta2:
+        x_ekseni_bitis = orta_nokta2
+        x_orta = (x_red + x_ekseni_bitis[0]) // 2
+        y_orta = y_nokta
+        orta_nokta = (x_orta, y_orta)
+
+        # Çizim işlemleri
+        cv2.line(frame, x_ekseni_baslangic, orta_nokta, (0, 0, 0), 1)
+        cv2.line(frame, orta_nokta, x_ekseni_bitis, (0, 0, 0), 1)
+        cv2.circle(frame, orta_nokta, 5, (255, 0, 0), -1)
+
+    # Görüntü işleme sonrası
+    frame = process_frame(frame, nokta_koordinat)
+
+
+
+    # Görüntüyü göster
+    cv2.imshow('Frame', frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
+"""
 
 import cv2
 import numpy as np
@@ -8,14 +77,9 @@ from PIL import Image, ImageTk
 import threading
 import time
 from datetime import datetime
-import pytesseract
-## Tesseract dosyasından fonksiyonu alıp buraya yapıştırıyoruz
-from tkinderIDA.Master.dedect_digit import read_locate_digit
-from tkinderIDA.Master.IHA.IHA_Nesli import mesafe_hesapla, yon_hesapla, gemi_koordinat_bul, donus_acisi
-
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
-
-
+from tkinderIDA.trials.checkpoint_muhammed import process_frame
+import tkinderIDA.trials.tesseract as tesseract
+from tkinderIDA.Master.IHA.IHA_Muhamemed import ilk_nokta, ikinci_nokta
 # Tkinter ana penceresi
 master = tk.Tk()
 
@@ -57,9 +121,9 @@ label_frame_fonksiyon = label_frame_olusturma(master, "Fonksiyon", 0.6, 0.6, 0.3
 def btnCamera():
     start_video_capture()
 
-# Diğer buton fonksiyonları
+# Diğer buton fonksiyonları    
 def btnBatma():
-    messagebox.showinfo("Bilgi", "Batma butonuna tikandi")
+    messagebox.showinfo("Bilgi", "Batma butonuna tikandi")    
 def btnCikma():
     messagebox.showinfo("Bilgi", "Çıkma butonuna tıklandı")
 
@@ -137,6 +201,7 @@ def find_mid_way(center1, center2):
     mid_y = (center1[1] + center2[1]) // 2
     return (mid_x, mid_y)
 
+orta_nokta2 = None
     
 
 def calculate_distance(point1, point2):
@@ -149,7 +214,9 @@ def start_video_capture():
 
          
                 
+
     def video_thread():
+        global orta_nokta2
         
         cap = cv2.VideoCapture(0)
 
@@ -164,18 +231,21 @@ def start_video_capture():
         fourcc = cv2.VideoWriter_fourcc(*"XVID")
         out = cv2.VideoWriter(video_filename, fourcc, 20.0, (frame_width, frame_height))
 
+        # sonuc = {"x": None, "y": None, "w": None, "h": None, "orta_nokta2": None}
+        # frame_count = 0
+        # fps_bekleme_suresi = 20  # OCR işlemini her 5 frame'de bir çalıştır
+
         while cap.isOpened():
             
             ret, frame = cap.read()
             
             if ret:
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                
                 # Kırmızı renk için maske
-                lower_red1 = np.array([0, 120, 70])
+                lower_red1 = np.array([0, 100, 100])
                 upper_red1 = np.array([10, 255, 255])
                 mask_red1 = cv2.inRange(hsv, lower_red1, upper_red1)
-                lower_red2 = np.array([170, 120, 70])
+                lower_red2 = np.array([160, 100, 100])
                 upper_red2 = np.array([180, 255, 255])
                 mask_red2 = cv2.inRange(hsv, lower_red2, upper_red2)
                 mask_red = mask_red1 + mask_red2
@@ -190,10 +260,17 @@ def start_video_capture():
                 upper_yellow = np.array([30, 255, 255])
                 mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
                 
-                # siyah renk için maske
-                lower_black=np.array([0,0,0])
-                upper_black=np.array([180,255,50])
+                # turuncu için maske
+                lower_orange = np.array([10, 100, 100])
+                upper_orange = np.array([25, 255, 255])
+                mask_orange=cv2.inRange(hsv,lower_orange,upper_orange)
+
+                # beyaz renk için maske
+                
+                lower_black = np.array([130, 50, 50])
+                upper_black = np.array([160, 255, 255])
                 mask_black = cv2.inRange(hsv, lower_black, upper_black)
+
 
 
 
@@ -208,20 +285,11 @@ def start_video_capture():
                 max_green_area, green_pixels, green_center = find_mid_of_counters(mask_green, (0, 255, 0), frame)
                 max_yellow_area, yellow_pixels, yellow_center = find_mid_of_counters(mask_yellow, (0, 255, 255), frame)
                 max_black_area,black_pixels,black_center= find_mid_of_counters(mask_black,(0,0,0),frame)
+               
+
+                mask_combined = cv2.bitwise_or(mask_red, cv2.bitwise_or(mask_yellow, mask_orange))
 
 
-                if max_red_area > 1000:
-                    color_detected = f"Kirmizi: {red_pixels} piksel"
-                elif max_green_area > 1000:
-                    color_detected = f"Yesil: {green_pixels} piksel"
-                elif max_yellow_area > 1000:
-                    color_detected = f"Sari: {yellow_pixels} piksel"
-                elif max_black_area>1000:
-                    max_black_area= f"siyah:{black_pixels} piksel"
-                else:
-                    color_detected = "Renk Yok"
-
-                
                 # Sarı ile kırmızı ve sarı ile yeşil arasındaki mesafeleri hesapla
                 if red_center != (0, 0) and yellow_center != (0, 0):
                     dist_red_yellow = calculate_distance(red_center, yellow_center)
@@ -247,91 +315,109 @@ def start_video_capture():
                 
                 if mid_way != (0, 0):  # Eğer geçerli bir orta nokta varsa
                     cv2.circle(frame, mid_way, 10, (255, 0, 255), -1)
-
-                
-                # gemi ortalama
-               
-                orta_yol=find_mid_way(red_center, green_center)
-                
-                # kamera orjini
-                orjin=(322,240)
-                cv2.circle(frame,orjin,5,(0,0,0),-1)
-                
-                
+                  # Tesseract4'ten orta noktayı almak için fonksiyonu çağır
 
 
-                # x ekseni
-                x_ekseni=(322,240)
-                cv2.line(frame,(0, 150),(650, 150),(0,0,0),1)
+                frame = cv2.resize(frame, (640, 480))  # Çözünürlüğü 640x480 olarak ayarla
 
-                # if orta_yol != (0, 0):  
-                #     cv2.circle(frame, orta_yol, 10, (255, 0, 0), -1)
-                # siyah gemi için
+                # OCR işlemini her karede yap
+                tesseract4.rakam_ve_konum_oku(frame)  # Sadece 'frame' gönderilir
+
+                # OCR sonucu 'orta_nokta2' değişkenini kontrol edin
+                global orta_nokta2
+                print(f"Orta Nokta 2: {orta_nokta2}")
+
+                # Gemi ortalama hesapla (örneğin red_center ve green_center)
+                orta_yol = find_mid_way(red_center, green_center)
+
+                # Triangle_center kontrol
+                frame, triangle_center, triangle_detected = detect_triangle(frame)
+                print(f"Triangle Center: {triangle_center}")
+
+                # Çizim işlemleri ve koordinatlar
+                # y_nokta = y_red - 100
+                # nokta_koordinat = (x_red, y_nokta)
+                ilk_nokta=nokta_koordinat
+                cv2.circle(frame, nokta_koordinat, 5, (0, 255, 0), -1)
+                
+                # Görüntüyü işleme
+                frame = process_frame(frame, ilk_nokta)
+
+                # X ekseni başlangıç noktaları
+                x_ekseni_baslangic = (x_red, y_nokta)
+                x_ekseni_bitis = (frame.shape[1] - 1, y_nokta)
+                orta_nokta = (x_red, y_nokta)
+
+                if orta_nokta2 is not None:
+                    # X ekseni başlangıç ve bitiş noktaları
+                    orta_nokta = ((ilk_nokta[0] + orta_nokta2[0]) // 2, y_nokta)
+                    x_ekseni_bitis = orta_nokta2
+
+                    # Çizim işlemleri
+                    cv2.line(frame, ilk_nokta, ikinci_nokta, (0, 0, 0), 1)
+                    cv2.line(frame, ikinci_nokta, orta_nokta, (0, 0, 0), 1)
+                    cv2.line(frame, orta_nokta, x_ekseni_bitis, (0, 0, 0), 1)
+
+                    # Noktaların üzerine daireler çizilir
+                    cv2.circle(frame, ilk_nokta, 5, (255, 0, 0), -1)
+                    cv2.circle(frame, ikinci_nokta, 5, (255, 0, 0), -1)
+                    cv2.circle(frame, orta_nokta, 5, (255, 0, 0), -1)
+                    cv2.circle(frame, x_ekseni_bitis, 5, (255, 0, 0), -1)
+                else:
+                    print("orta_nokta2 tanımlı değil!")
+
+                # Görüntü işleme sonrası
+                frame = process_frame(frame, nokta_koordinat)
+
                 if black_center != (0, 0):  
-                    cv2.circle(frame, mid_way, 10, (0, 0, 0), -1)
+                    cv2.circle(frame,black_center, 10, (0, 0, 0), -1)
                 
                 # normalde x,y= orta_yol
                 x,y=black_center
                 a,b=mid_way
-                
-                # daha fazla ayrıntı eklendi, artık topları teker teker seçebiliyor
-                def gemi_görüyor_fn(black_center,red_center, green_center, yellow_center, orjin,gemi_uyarısı_metin):
-                    x_min, x_max = orjin[0] - 300, orjin[0] + 300
 
-                    yellow_in_range = x_min <= yellow_center[0] <= x_max
-                    green_in_range = x_min <= green_center[0] <= x_max
-                    red_in_range = x_min <= red_center[0] <= x_max
-                    black_in_range=x_min<= black_center[0] <=x_max
-                    
+                def öneri2_fn(x_ekseni_baslangic, ikinci_nokta, orta_nokta, x_ekseni_bitis, nokta_koordinat):
+                    x_gemi, y_gemi = nokta_koordinat  # Geminin merkez koordinatları
 
-                    if yellow_in_range and green_in_range and red_in_range:
-                        return "üç topu da görüyorum"
-                  
-                    elif black_in_range:
-                        return "gemiyi görüyorum"
+                    if gemi_uyarısı_metin == "gemiyi görüyorum":
+                        # Gemi başlangıç ve ikinci nokta arasındaysa
+                        if x_ekseni_baslangic[0] <= x_gemi <= ikinci_nokta[0]:
+                            if y_gemi < ikinci_nokta[1] - 2:
+                                öneri2_metin = "gemiyi sola kır (Başlangıç-İkinci Nokta)"
+                                return "gemiyi sola kır (Başlangıç-İkinci Nokta)"
+                            elif y_gemi > ikinci_nokta[1] + 2:
+                                öneri2_metin = "gemiyi sağa kır (Başlangıç-İkinci Nokta)"
+                                return "gemiyi sağa kır (Başlangıç-İkinci Nokta)"
+                            else:
+                                öneri2_metin = "dümdüz devam (Başlangıç-İkinci Nokta)"
+                                return "dümdüz devam (Başlangıç-İkinci Nokta)"
+
+                        # Gemi ikinci nokta ve orta nokta arasındaysa
+                        elif ikinci_nokta[0] < x_gemi <= orta_nokta[0]:
+                            if y_gemi < orta_nokta[1] - 2:
+                                öneri2_metin = "gemiyi sola kır (İkinci Nokta-Orta)"
+                                return "gemiyi sola kır (İkinci Nokta-Orta)"
+                            elif y_gemi > orta_nokta[1] + 2:
+                                öneri2_metin = "gemiyi sağa kır (İkinci Nokta-Orta)"
+                                return "gemiyi sağa kır (İkinci Nokta-Orta)"
+                            else:
+                                öneri2_metin = "dümdüz devam (İkinci Nokta-Orta)"
+                                return "dümdüz devam (İkinci Nokta-Orta)"
+
+                        # Gemi orta nokta ve bitiş nokta arasındaysa
+                        elif orta_nokta[0] < x_gemi <= x_ekseni_bitis[0]:
+                            if y_gemi < x_ekseni_bitis[1] - 2:
+                                öneri2_metin = "gemiyi sola kır (Orta-Bitiş)"
+                                return "gemiyi sola kır (Orta-Bitiş)"
+                            elif y_gemi > x_ekseni_bitis[1] + 2:
+                                öneri2_metin = "gemiyi sağa kır (Orta-Bitiş)"
+                                return "gemiyi sağa kır (Orta-Bitiş)"
+                            else:
+                                öneri2_metin = "dümdüz devam (Orta-Bitiş)"
+                                return "dümdüz devam (Orta-Bitiş)"
                     else:
-                        return "üç topu da görmüyorum"
-                    
-                    
-                    
-                def öneri1_fn(x, orjin):
-                    if gemi_uyarısı_metin=="gemiyi görüyorum":
-                        if x > 20 + orjin[0]:
-                            öneri1_metin="ihayı sağa kır"
-                            return "ihayı sağa kır"
-                        elif x < orjin[0] - 20:
-                            öneri1_metin = "ihayı sola kır"
-                            return "ihayı sola kır"
-                        else:
-                            öneri1_metin = "iha gemiye ortalı"
-                            return "iha gemiye ortalı"
-                    else:
-                        öneri1_metin="gemi gözükmüyor"
+                        öneri2_metin = "gemi gözükmüyor"
                         return "gemi gözükmüyor"
-                
-                def öneri2_fn(x_ekseni,black_center):
-
-                    if gemi_uyarısı_metin=="gemiyi görüyorum":
-                        if x > 20 + x_ekseni[1]:
-                            öneri2_metin="gemiyi sağa kır"
-                            return "gemiyi sağa kır"
-                        elif x < x_ekseni[1] - 20:
-                            öneri2_metin = "gemiyi sola kır"
-                            return "gemiyi sola kır"
-                        else:
-                            öneri2_metin = "dümdüz devam"
-                            return "dümdüz devam"
-                    else:
-                        öneri2_metin="gemi gözükmüyor"
-                        return "gemi gözükmüyor"
-
-                  
-                
-                  
-                   
-                     
-            
-
                 
                 gemi_uyarısı_metin="birazdan gemi uyarısı geliyor..."
                 öneri1_metin="birazdan öneri1 geliyor..."
@@ -339,8 +425,8 @@ def start_video_capture():
                 # öneri3_metin="birazdan öneri3 geliyor..."
                 
                 gemi_uyarısı_metin= gemi_görüyor_fn(black_center,red_center,green_center,yellow_center,orjin,gemi_uyarısı_metin)
-                öneri1_metin= öneri1_fn(x,orjin)
-                öneri2_metin= öneri2_fn(black_center,x_ekseni)
+                # öneri1_metin= öneri1_fn(x,orjin)
+                öneri2_metin= öneri2_fn(x_ekseni_baslangic, orta_nokta, x_ekseni_bitis, nokta_koordinat)
                 # öneri3_metin =öneri3_fn(yellow_center,green_center,red_center,orjin,gemi_uyarısı_metin)
               
                    
@@ -358,7 +444,7 @@ def start_video_capture():
                     label_veri.imgtk = imgtk
                     label_veri.config(image=imgtk)
                     height, width, _ = frame.shape
-                    update_sonuc_panel(f"Görüntü Boyutu: {width}x{height}\n{color_detected}\n{gemi_uyarısı_metin}\n{öneri1_metin}\n{öneri2_metin}")
+                    update_sonuc_panel(f"Görüntü Boyutu: {width}x{height}\n{gemi_uyarısı_metin}\n{öneri2_metin}")
 
                 master.after(0, update_gui)
                 out.write(frame)

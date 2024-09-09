@@ -2,9 +2,10 @@ import cv2
 import numpy as np
 import pytesseract
 from PIL import Image
-from tkinderIDA.Master.dedect_digit import *
-from tkinderIDA.Master.balls_part import *
-from tkinderIDA.Master.iha_lead import *
+from dedect_digit import *
+from balls_part import *
+from tkinderIDA.Master.IHA.IHA_Nesli import *
+from tkinderIDA.Master.IHA.IHA_Muhamemed import *
 import keyboard
 import pigpio
 
@@ -48,7 +49,7 @@ def find_port(frame):
             cv2.putText(frame, "Liman", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         
 # Girilen PORT değerine göre botun hareket kendi konumunu belirlemesi ve hareket etmesi
-def lead_toPort(konumlar_sözlüğü, PORT , frame):
+def lead_toPortNesli(konumlar_sözlüğü, PORT , frame):
     # Neslinin ya da Muhammedin kodunu buraya yaz
     if PORT == 1:
         hedef_coord = konumlar_sözlüğü['1'][0]
@@ -68,8 +69,10 @@ def lead_toPort(konumlar_sözlüğü, PORT , frame):
     while(15<degree):
         degree = donus_acisi(frame, hedef_coord)
         turn_left()
+        
+    go_straight()
 
-def IHA_commands(frame , PORT):
+def IHA_commands_NESLI(frame , PORT):
     # Botun renginin algılanması
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     
@@ -85,8 +88,31 @@ def IHA_commands(frame , PORT):
     
     # IHA'ya gore hareket
     while True:
-        lead_toPort(konumlar_sözlüğü, PORT , frame)
+        lead_toPortNesli(konumlar_sözlüğü, PORT , frame)
         
+        if True: # Gemi yeterince yaklaşmışsa çık
+            break
+        
+def lead_toPortMuhammed(konumlar_sözlüğü, PORT , frame):
+    ...
+    
+def IHA_commands_MUHAMMED(frame , PORT):
+    # Botun renginin algılanması
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    
+    # Botu dikdörtgene al konumu döndür
+    # x_boat , y_boat = find_boat(frame)
+    
+    # Beyaz limanın renginin algılanması ve dikdörtgene alınması
+    find_port(frame)
+    
+    # Limandakı sayıların algılanması ve konumlarının sözlük olarak döndürülmesi
+    konumlar_sözlüğü = read_locate_digit(frame)
+    
+    # IHA'ya gore hareket
+    while True:
+        lead_toPortMuhammed(konumlar_sözlüğü, PORT , frame)
         if True: # Gemi yeterince yaklaşmışsa çık
             break
     
