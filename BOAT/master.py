@@ -16,14 +16,10 @@ import numpy as np
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-from main_driving.balls_part import *
-from dedect_digit import *
-from main_driving.ihas_part import *
-from main_driving.IHA_Muhamemed import *
-from main_driving.IHA_Nesli import *
-
+from BOAT.find_way import *
 
 """
+
 # Motorların bağlı olduğu GPIO pinleri
 left_motor_pin = 17   # Sol motor ESC pini
 right_motor_pin = 18  # Sağ motor ESC pini
@@ -35,10 +31,6 @@ pi = pigpio.pi()
 if not pi.connected:
     messagebox.showerror("Error", "Pigpio daemon not running!")
     sys.exit()  # Hata varsa program sonlandırılır
-
-# Global olarak cap_boat ve cap_iha tanımlıyoruz
-cap_boat = None  # Değişiklik: Global tanımlama
-cap_iha = None   # Değişiklik: Global tanımlama
 
 """
 

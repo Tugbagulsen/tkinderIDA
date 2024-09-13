@@ -68,9 +68,9 @@ def lead_toPortNesli(konumlar_sözlüğü, PORT , frame):
     degree = 16
     while(15<degree):
         degree = donus_acisi(frame, hedef_coord)
-        turn_left()
+        print("Sola dön")
         
-    go_straight()
+    print("Duz git")
 
 def IHA_commands_NESLI(frame , PORT):
     # Botun renginin algılanması
@@ -116,4 +116,9 @@ def IHA_commands_MUHAMMED(frame , PORT):
         if True: # Gemi yeterince yaklaşmışsa çık
             break
     
+def main():
+    ...
+    
+if __name__ == "__main__":
+    main()
     

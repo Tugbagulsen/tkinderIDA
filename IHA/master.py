@@ -16,11 +16,7 @@ import numpy as np
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-from main_driving.balls_part import *
-from dedect_digit import *
-from main_driving.ihas_part import *
-from main_driving.IHA_Muhamemed import *
-from main_driving.IHA_Nesli import *
+from BOAT.find_way import *
 
 
 """
@@ -35,12 +31,8 @@ pi = pigpio.pi()
 if not pi.connected:
     messagebox.showerror("Error", "Pigpio daemon not running!")
     sys.exit()  # Hata varsa program sonlandırılır
-
-# Global olarak cap_boat ve cap_iha tanımlıyoruz
-cap_boat = None  # Değişiklik: Global tanımlama
-cap_iha = None   # Değişiklik: Global tanımlama
-
 """
+
 
 def main():
     start_video_capture()
@@ -48,12 +40,12 @@ def main():
 # Video capture için iki ayrı thread kullanımı
 def start_video_capture():
     # GEMİ KAMERASI İNDEXİ
-    boat_camera = 0  # GEMİNİN KAMERASI
+    IHA_kamera = 0  # IHA KAMERASI
     
     # Kamera başlatma
-    cap_boat = cv2.VideoCapture(boat_camera)
+    cap_IHA = cv2.VideoCapture(IHA_kamera)
     # Kamera kaydı açılamazsa hata mesajı ver
-    if not cap_boat.isOpened():
+    if not cap_IHA.isOpened():
         messagebox.showerror("Error", "BOAT Camera not found or cannot be opened!")
         return
     
@@ -61,21 +53,24 @@ def start_video_capture():
     now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     video_filename = f"Akriha_Control_{now}.avi"
     fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    frame_width = int(cap_boat.get(cv2.CAP_PROP_FRAME_WIDTH))
-    frame_height = int(cap_boat.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    frame_width = int(cap_IHA.get(cv2.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(cap_IHA.get(cv2.CAP_PROP_FRAME_HEIGHT))
     out = cv2.VideoWriter(video_filename, fourcc, 20.0, (frame_width, frame_height))
 
-    def video_thread_boat():
-        while cap_boat.isOpened():
-            ret, frame = cap_boat.read()
+    def video_thread_IHA():
+        while cap_IHA.isOpened():
+            ret, frame = cap_IHA.read()
             if ret:
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
                 #drive_boat(ret , frame)  # Bu fonksiyonun düzgün çalıştığından emin olun
                 out.write(frame)  # Videoyu kaydet
             time.sleep(0.05)
 
-        cap_boat.release()  # Değişiklik: Kamera kaynağını kapatma
+        cap_IHA.release()  # Değişiklik: Kamera kaynağını kapatma
         out.release()  # Değişiklik: Video kaynağını kapatma
-
+        
+    video_thread_IHA()
+    
+    
 if __name__ == '__main__':
     main()
