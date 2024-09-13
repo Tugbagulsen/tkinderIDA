@@ -13,6 +13,7 @@ from datetime import datetime
 
 import numpy as np
 
+from IHA.find_way import *
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
@@ -39,8 +40,11 @@ def main():
 
 # Video capture için iki ayrı thread kullanımı
 def start_video_capture():
+    konum_kontrol = 0
+    
     # GEMİ KAMERASI İNDEXİ
     IHA_kamera = 0  # IHA KAMERASI
+    hedef_liman = int(input("Hedef liman sayısı"))
     
     # Kamera başlatma
     cap_IHA = cv2.VideoCapture(IHA_kamera)
@@ -62,7 +66,7 @@ def start_video_capture():
             ret, frame = cap_IHA.read()
             if ret:
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                #drive_boat(ret , frame)  # Bu fonksiyonun düzgün çalıştığından emin olun
+                drive_IHA(ret , frame, hedef_liman, konum_kontrol)  # Bu fonksiyonun düzgün çalıştığından emin olun
                 out.write(frame)  # Videoyu kaydet
             time.sleep(0.05)
 

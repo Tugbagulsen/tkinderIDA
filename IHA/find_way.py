@@ -130,7 +130,7 @@ def detect_triangle(frame):
 
     return triangle_center, triangle_detected, pt1, pt2, pt3
 
-def draw_points(frame, triangle_center, pt1, pt2, pt3, liman_hedefleri, hedef_liman):
+def draw_points(frame, triangle_center, pt1, pt2, pt3, hedef_liman):
     if triangle_center == (0, 0):
         print("Üçgen algılanamadı!")
         return None
@@ -143,13 +143,13 @@ def draw_points(frame, triangle_center, pt1, pt2, pt3, liman_hedefleri, hedef_li
     cv2.circle(frame, hedef_1, 5, (255, 0, 0), -1)  # Yeni noktayı mavi çember ile göster
     
     # İkinci nokta: Ağırlık merkezinden 100 piksel yukarı ve 100 piksel sol kaydırılmış nokta
-    hedef_2 = (triangle_center[0] - 100, triangle_center[1] - 50)
+    hedef_2 = (sol_alt_kose[0] - 100, triangle_center[1] - 50)
 
     # İkinci noktayı çiz (mavi çember ile göster)
     cv2.circle(frame, hedef_2, 3, (255, 0, 0), -1)
     
     # Üçüncü nokta: hedef limanın x ekseninden 100 piksel solda ve y ekseninde aynı hizada
-    hedef_3 = (hedef_liman[0] - 100, hedef_liman[1])
+    hedef_3 = (hedef_liman[0] - 200, hedef_liman[1])
 
     cv2.circle(frame, hedef_3, 5, (255, 0, 0), -1)  # Üçüncü noktayı mavi çember ile göster
     
@@ -245,10 +245,8 @@ def donus_acisi(frame, hedef_koord):
         
         return aci_farki
      
-def drive_IHA(ret , frame):
-    
-    hedef_liman = int(input("Hedef liman sayısı"))
-    
+def drive_IHA(ret , frame, hedef_liman , position_check):
+        
     # Görüntü geliyor mu kontrol et
     if not ret:
         print("Görüntü alınamadı!")
@@ -263,23 +261,47 @@ def drive_IHA(ret , frame):
         print("Go straight")
         drive_IHA(ret, frame)
 
-    # 1: x,y
-    # 2: x,y
-    # 3: x,y
     # Hedef limanın koordinatları
     liman_hedefleri = dedect_digit()
     
-    # Hedef koordinatı bul
-    hedef_4 = liman_hedefleri[hedef_liman]
-    
+    hedef_liman = liman_hedefleri[hedef_liman]
     # Hedefleri belirle
-    points = draw_points(frame, triangle_center, pt1, pt2, pt3, liman_hedefleri, hedef_liman)
+    hedefler = draw_points(frame, triangle_center, pt1, pt2, pt3, hedef_liman)
     
     # Hedefler arası çizgi çiz
-    cv2.line(frame, points[0], points[1], (0, 0, 255), 2)
-    cv2.line(frame, points[1], points[2], (0, 0, 255), 2)
-    cv2.line(frame, points[2], points[3], (0, 0, 255), 2)
+    cv2.line(frame, hedefler[0], hedefler[1], (0, 0, 255), 2)
+    cv2.line(frame, hedefler[1], hedefler[2], (0, 0, 255), 2)
+    cv2.line(frame, hedefler[2], hedefler[3], (0, 0, 255), 2)
+    if position_check<1:
+        drive_to_point(frame, hedefler[1])
+    elif position_check<2:
+        drive_to_point(frame, hedefler[2])
+    elif position_check<3:
+        drive_to_point(frame, hedefler[3])
+    elif position_check<4:
+        print("Hedefe ulaşıldı")
+
+def drive_to_point(frame, hedef_koord, position_check):
     
+    # Açı farkı hesapla
+    # Açı farkını kapatacak şekilde botu döndür
+    # Botu düz götür
+    
+    aci_farki = donus_acisi(frame, hedef_koord)
+    gemi_koord = find_boat(frame)
+    if 350 > aci_farki > 10 and mesafe_hesapla(gemi_koord, hedef_koord) > 10:
+        if aci_farki > 180:
+            print(f"Turn right {aci_farki}")
+        else:
+            print(f"Turn left {aci_farki}")
+    else:
+        if mesafe_hesapla(gemi_koord, hedef_koord) > 10:
+            print("Go straight")
+            if mesafe_hesapla(gemi_koord,hedef_koord)<10:
+                print("Hedefe ulaşıldı")
+                position_check = position_check + 1
+    
+   
     
 
 def main():
