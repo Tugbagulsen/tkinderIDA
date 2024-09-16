@@ -323,14 +323,10 @@ def start_iha_control(frame):
     
     # Sarı, kırmızı ve yeşil renkleri tespit et
     mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
-    mask_red1 = cv2.inRange(hsv, lower_red1, upper_red1)
-    mask_red2 = cv2.inRange(hsv, lower_red2, upper_red2)
-    mask_red = cv2.bitwise_or(mask_red1, mask_red2)
     mask_green = cv2.inRange(hsv, lower_green, upper_green)
     
     # Maskeleri belirli alan maskesi ile birleştir
     mask_yellow = cv2.bitwise_and(mask_yellow, mask_yellow, mask=mask)
-    mask_red = cv2.bitwise_and(mask_red, mask_red, mask=mask)
     mask_green = cv2.bitwise_and(mask_green, mask_green, mask=mask)
     
     # Sarı, kırmızı ve yeşil alanların olup olmadığını kontrol et
