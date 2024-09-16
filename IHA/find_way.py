@@ -317,12 +317,6 @@ def start_iha_control(frame):
     lower_yellow = np.array([20, 100, 100])
     upper_yellow = np.array([30, 255, 255])
     
-    # Kırmızı rengin HSV aralığını belirle
-    lower_red1 = np.array([0, 100, 100])
-    upper_red1 = np.array([10, 255, 255])
-    lower_red2 = np.array([160, 100, 100])
-    upper_red2 = np.array([180, 255, 255])
-    
     # Yeşil rengin HSV aralığını belirle
     lower_green = np.array([40, 100, 100])
     upper_green = np.array([70, 255, 255])
@@ -340,7 +334,7 @@ def start_iha_control(frame):
     mask_green = cv2.bitwise_and(mask_green, mask_green, mask=mask)
     
     # Sarı, kırmızı ve yeşil alanların olup olmadığını kontrol et
-    if cv2.countNonZero(mask_yellow) > 2 or cv2.countNonZero(mask_red) > 2 or  cv2.countNonZero(mask_green) > 2: # 2 yanılsamaya karsı hata payı bunu mutlaka kontrol edin
+    if cv2.countNonZero(mask_yellow)> 2 or  cv2.countNonZero(mask_green) > 2: # 2 yanılsamaya karsı hata payı bunu mutlaka kontrol edin
         return 0
     else:
         return 1
