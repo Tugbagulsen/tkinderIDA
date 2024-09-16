@@ -245,13 +245,14 @@ def donus_acisi(frame, hedef_koord):
         
         return aci_farki
      
-def drive_IHA(ret , frame, hedef_liman , position_check):
-        
-    # Görüntü geliyor mu kontrol et
+def drive_IHA(ret , frame, hedef_liman , position_check,):
+    
+     # Görüntü geliyor mu kontrol et
     if not ret:
         print("Görüntü alınamadı!")
         return
     
+ 
     # Üçgeni algıla
     triangle_center, triangle_detected, pt1, pt2, pt3 = detect_triangle(frame)
     
@@ -301,7 +302,49 @@ def drive_to_point(frame, hedef_koord, position_check):
                 print("Hedefe ulaşıldı")
                 position_check = position_check + 1
     
-   
+def start_iha_control(frame):
+    metre_kare=200 # 1 metrekareyi goren piksel sayısı olculup guncellenicek
+    sinir_alan=18*metre_kare
+    b_x,b_y=find_boat(frame)   
+     # Belirli bir alanı kontrol etmek için bir maske oluştur
+    mask = np.zeros(frame.shape[:2], dtype="uint8")
+    cv2.circle(mask, (b_x, b_y), int(np.sqrt(sinir_alan / np.pi)), 255, -1)
+    
+    # Görüntüyü HSV renk uzayına dönüştür
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    
+    # Sarı rengin HSV aralığını belirle
+    lower_yellow = np.array([20, 100, 100])
+    upper_yellow = np.array([30, 255, 255])
+    
+    # Kırmızı rengin HSV aralığını belirle
+    lower_red1 = np.array([0, 100, 100])
+    upper_red1 = np.array([10, 255, 255])
+    lower_red2 = np.array([160, 100, 100])
+    upper_red2 = np.array([180, 255, 255])
+    
+    # Yeşil rengin HSV aralığını belirle
+    lower_green = np.array([40, 100, 100])
+    upper_green = np.array([70, 255, 255])
+    
+    # Sarı, kırmızı ve yeşil renkleri tespit et
+    mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
+    mask_red1 = cv2.inRange(hsv, lower_red1, upper_red1)
+    mask_red2 = cv2.inRange(hsv, lower_red2, upper_red2)
+    mask_red = cv2.bitwise_or(mask_red1, mask_red2)
+    mask_green = cv2.inRange(hsv, lower_green, upper_green)
+    
+    # Maskeleri belirli alan maskesi ile birleştir
+    mask_yellow = cv2.bitwise_and(mask_yellow, mask_yellow, mask=mask)
+    mask_red = cv2.bitwise_and(mask_red, mask_red, mask=mask)
+    mask_green = cv2.bitwise_and(mask_green, mask_green, mask=mask)
+    
+    # Sarı, kırmızı ve yeşil alanların olup olmadığını kontrol et
+    if cv2.countNonZero(mask_yellow) > 2 or cv2.countNonZero(mask_red) > 2 or  cv2.countNonZero(mask_green) > 2: # 2 yanılsamaya karsı hata payı bunu mutlaka kontrol edin
+        return 0
+    else:
+        return 1
+
     
 
 def main():

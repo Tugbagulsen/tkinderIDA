@@ -62,11 +62,15 @@ def start_video_capture():
     out = cv2.VideoWriter(video_filename, fourcc, 20.0, (frame_width, frame_height))
 
     def video_thread_IHA():
+        start_ctrl=0
         while cap_IHA.isOpened():
             ret, frame = cap_IHA.read()
             if ret:
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                drive_IHA(ret , frame, hedef_liman, konum_kontrol)  # Bu fonksiyonun düzgün çalıştığından emin olun
+                if start_ctrl==0:
+                    start_ctrl=start_iha_control(frame)
+                else:   
+                    drive_IHA(ret , frame, hedef_liman, konum_kontrol)  # Bu fonksiyonun düzgün çalıştığından emin olun
                 out.write(frame)  # Videoyu kaydet
             time.sleep(0.05)
 
