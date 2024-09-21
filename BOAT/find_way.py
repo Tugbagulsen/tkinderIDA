@@ -3,9 +3,6 @@ import numpy as np
 import time
 import pigpio
 import keyboard
-                            ### ************ ### NOT olmayan bütün yorum satırlarının yorumunu kaldırınız.
-# Yorum satırları bu dosyada 18-54 arası ayrıca 60,63,66 ve 197. satırda bulunmaktadır.
-                            ### ************ ###
 
 # Motorların bağlı olduğu GPIO pinleri
 left_motor_pin = 17
@@ -15,9 +12,8 @@ right_motor_pin = 18
 min_pulse_width = 1000
 max_pulse_width = 2000
 
-"""
 # pigpio instance
-#pi = pigpio.pi()
+pi = pigpio.pi()
 
 def gradual_move(pin, target_pulse_width, step_size=10, step_delay=0.01):
     current_pulse_width = pi.get_servo_pulsewidth(pin)
@@ -51,21 +47,16 @@ def stop_motors():
     pi.set_servo_pulsewidth(left_motor_pin, 0)
     pi.set_servo_pulsewidth(right_motor_pin, 0)
 
-"""
-
-
 def drive_direction(mid_way, orjin):
     if mid_way[0] < orjin[0] - 50:
         print("sol")
-        #turn_left()
+        turn_left()
     elif mid_way[0] > orjin[0] + 50:
         print("sağ")
-        #turn_right()
+        turn_right()
     else:
         print("düz")
-        #go_straight()
-        
-
+        go_straight()
 
 # Max area of a color to be considered as detected
 color_limit = 123
@@ -194,7 +185,7 @@ def drive_boat(ret , frame):
     if mid_way != (0, 0):
         drive_direction(mid_way, orjin)
     else:
-        #go_straight()
+        go_straight()
         ...
    
 def main():

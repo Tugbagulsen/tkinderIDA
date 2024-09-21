@@ -4,7 +4,7 @@ import pytesseract
 # Tesseract'a giden yolu belirt
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-def dedect_digit(ret , frame):
+def dedect_digit(ret, frame):
     # Görüntünün genişliğini ve yüksekliğini al
     if not ret:
         print("Görüntü okunamadı.")
@@ -70,7 +70,7 @@ def main():
             break
 
         # Görüntüdeki 1, 2 ve 3 rakamlarını ve konumlarını oku
-        konumlar_sözlüğü = dedect_digit(frame)
+        konumlar_sözlüğü = dedect_digit(ret, frame)
         
         # Tespit edilen rakamların etrafına dikdörtgen çiz ve rakamı ekrana yazdır
         for rakam, konumlar in konumlar_sözlüğü.items():
