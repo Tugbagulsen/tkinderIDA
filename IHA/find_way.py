@@ -245,7 +245,7 @@ def donus_acisi(frame, hedef_koord):
         
         return aci_farki
      
-def drive_IHA(ret , frame, hedef_liman , position_check,):
+def drive_IHA(ret , frame, hedef_liman , position_check):
     
      # Görüntü geliyor mu kontrol et
     if not ret:
@@ -305,7 +305,7 @@ def drive_to_point(frame, hedef_koord, position_check):
 def start_iha_control(frame):
     metre_kare=200 # 1 metrekareyi goren piksel sayısı olculup guncellenicek
     sinir_alan=18*metre_kare
-    b_x,b_y=find_boat(frame)   
+    b_x,b_y=find_boat(frame)
      # Belirli bir alanı kontrol etmek için bir maske oluştur
     mask = np.zeros(frame.shape[:2], dtype="uint8")
     cv2.circle(mask, (b_x, b_y), int(np.sqrt(sinir_alan / np.pi)), 255, -1)

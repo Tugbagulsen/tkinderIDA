@@ -69,7 +69,7 @@ def start_video_capture():
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
                 if start_ctrl==0:
                     start_ctrl=start_iha_control(frame)
-                else:   
+                else:
                     drive_IHA(ret , frame, hedef_liman, konum_kontrol)  # Bu fonksiyonun düzgün çalıştığından emin olun
                 out.write(frame)  # Videoyu kaydet
             time.sleep(0.05)
